@@ -1,5 +1,5 @@
 # package version
-._version.py
+_version.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vim,emacs,matlab,fortran
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,vim,emacs,matlab,fortran
