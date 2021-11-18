@@ -1,5 +1,4 @@
 # nordic-seas-validation
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/JMMP-Group/nordic-seas-validation/main.svg?badge_token=c0GonDdFTuG4tzOpWXR34g)](https://results.pre-commit.ci/latest/github/JMMP-Group/nordic-seas-validation/main?badge_token=c0GonDdFTuG4tzOpWXR34g)
 
 ## Quick-start
 
