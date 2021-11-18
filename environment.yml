@@ -1,0 +1,5 @@
+name: nordic-seas-validation
+channels:
+  - conda-forge
+dependencies:
+  - pooch
