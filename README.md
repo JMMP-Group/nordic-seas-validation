@@ -11,6 +11,8 @@ pip install -e .
 python -c "import src"
 ```
 ## Raw data
+[JMMP GWS](https://gws-access.jasmin.ac.uk/public/jmmp/NORVAL/)
+
 | NAME | REFERENCE |
 |---|---|
 | EEL | [Loïc Houpert GitHub](https://github.com/lhoupert/analysis_eel_data)
