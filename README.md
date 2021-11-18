@@ -2,8 +2,8 @@
 
 ## Quick-start
 
-```
-git clone git@github.com:JMMP-Group/nordic-seas-validation.git`
+```shell
+git clone git@github.com:JMMP-Group/nordic-seas-validation.git
 cd nordic-seas-validation
 conda env create -f environment.yml
 conda activate nordic-seas-validation
