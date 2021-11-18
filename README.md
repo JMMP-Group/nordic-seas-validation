@@ -19,3 +19,4 @@ python -c "import src"
 | Látrabjarg (hydrography) | [Mastropole et al., 2017](https://doi.org/10.1002/2016JC012007) |
 | Látrabjarg (velocity) | [Våge et al., 2011](https://doi.org/10.1038/ngeo1234) |
 | OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) |
+| OVIDE | [10.17882/46446](https://doi.org/10.17882/46446)
