@@ -95,7 +95,9 @@ class Standardizer:
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         # Rename
-        ds = ds.rename(xvec="dist")
+        ds = ds.rename(
+            xvec="dist", ws="through_section_velocity", wc="cross_section_velocity"
+        )
 
         return add_cf_attributes(ds)
 
@@ -135,13 +137,8 @@ class Standardizer:
         ds = ds.rename_dims({dist_coord.name: "station"})
         return ds
 
-    @property
-    def latrabjarg_climatology(self) -> Dataset:
-        """Standardized Látrabjarg climatology dataset"""
-
-        # Open mat file
-        filename = self.raw_pooch.fetch("Latrabjarg/meanFields_MastrpoleEtAl2017.mat")
-        mat = loadmat(filename, squeeze_me=True, mat_dtype=True)
+    def _initialize_latrabjarg(self, mat) -> Dataset:
+        """Initialize Látrabjarg dataset"""
 
         # Dimensions
         coords = {
@@ -165,7 +162,7 @@ class Standardizer:
         ds["station"] = ds["station"]
 
         # Center at the sill
-        notnull_count = ds["SIG"].notnull().sum("Y")
+        notnull_count = ds["OrtVel" if "OrtVel" in ds else "SIG"].notnull().sum("Y")
         sill_station = (
             ds["station"].where(notnull_count == notnull_count.max()).mean().round()
         )
@@ -175,6 +172,19 @@ class Standardizer:
         ds = ds.merge(self._interpolate_latrabjarg_bathymetry(ds["X"]))
         ds = ds.set_coords(["longitude", "latitude"])
         ds["X"] = ds["X"] * 1.0e3
+
+        return ds
+
+    @property
+    def latrabjarg_climatology(self) -> Dataset:
+        """Standardized Látrabjarg climatology dataset"""
+
+        # Open mat file
+        filename = self.raw_pooch.fetch("Latrabjarg/meanFields_MastrpoleEtAl2017.mat")
+        mat = loadmat(filename, squeeze_me=True, mat_dtype=True)
+
+        # Create dataset
+        ds = self._initialize_latrabjarg(mat)
 
         # Manually add CF attributes
         attrs_dict = dict(
@@ -198,5 +208,33 @@ class Standardizer:
 
         # Rename
         ds = ds.rename(X="dist")
+
+        return add_cf_attributes(ds)
+
+    @property
+    def latrabjarg_survey(self) -> Dataset:
+        """Standardized Látrabjarg survey dataset"""
+
+        # Open mat file
+        filename = self.raw_pooch.fetch("Latrabjarg/Velocities_VageEtAl2011.mat")
+        mat = loadmat(filename, squeeze_me=True, mat_dtype=True)
+
+        # Create dataset
+        ds = self._initialize_latrabjarg(mat)
+
+        # Manually add CF attributes
+        attrs_dict = dict(
+            Y={
+                "standard_name": "depth",
+                "positive": "down",
+            },
+            X={"long_name": "distance from sill", "units": "m"},
+            station={"long_name": "station id"},
+            OrtVel={"long_name": "through section velocity", "units": "m s-1"},
+        )
+        ds = add_attributes_and_rename_variables(ds, attrs_dict)
+
+        # Rename
+        ds = ds.rename(X="dist", OrtVel="through_section_velocity")
 
         return add_cf_attributes(ds)
