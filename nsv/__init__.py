@@ -7,4 +7,5 @@ try:
 except PackageNotFoundError:
     __version__ = "unknown"
 
-__all__ = ("Standardizer",)
+# Set alias
+Standardiser = Standardizer
