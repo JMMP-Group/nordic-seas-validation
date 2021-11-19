@@ -56,13 +56,13 @@ class Standardizer:
         ds["tvec"] = ds["tvec"].dt.round("H")
 
         # Add coordinates
-        mooring = Dataset(
+        moorings = Dataset(
             {var: DataArray(mat[var], dims="dist") for var in ("lon", "lat", "dist")}
         )
-        mooring = mooring.rename(dist="xvec")
-        interp = mooring.interp(xvec=ds["xvec"])
+        moorings = moorings.rename(dist="xvec")
+        interp = moorings.interp(xvec=ds["xvec"])
         for coord in ("lon", "lat"):
-            interp[coord][-1] = mooring[coord][-1]
+            interp[coord][-1] = moorings[coord][-1]
             ds = ds.assign_coords({coord: interp[coord]})
         ds["xvec"] = ds["xvec"] * 1.0e3
 
@@ -99,6 +99,42 @@ class Standardizer:
 
         return add_cf_attributes(ds)
 
+    def _interpolate_latrabjarg_bathymetry(self, dist_coord: DataArray) -> Dataset:
+        """Interpolate Látrabjarg bathymetry using distances from sill"""
+
+        # Open mat file
+        filename = self.raw_pooch.fetch("Latrabjarg/LatBat.mat")
+        mat = loadmat(filename, squeeze_me=True, mat_dtype=True)
+
+        # Create dataset
+        ds = Dataset(
+            {
+                name: DataArray(data, dims="regdist")
+                for name, data in mat.items()
+                if not name.startswith("_")
+            }
+        )
+
+        # Remove duplicates
+        ds = ds.groupby("regdist").mean()
+
+        # Center at the sill
+        ds["regdist"] = ds["regdist"] - ds["regdist"][ds["regbat"].argmax()]
+
+        # Manually add CF attributes
+        attrs_dict = dict(
+            reglat={"standard_name": "latitude"},
+            reglon={"standard_name": "longitude"},
+            regbat={"standard_name": "sea_floor_depth_below_geoid"},
+        )
+        ds = add_attributes_and_rename_variables(ds, attrs_dict)
+
+        # Interpolate
+        ds = ds.rename(regdist=dist_coord.name)
+        ds = ds.interp(**{dist_coord.name: dist_coord.values})
+        ds = ds.rename_dims({dist_coord.name: "station"})
+        return ds
+
     @property
     def latrabjarg_climatology(self) -> Dataset:
         """Standardized Látrabjarg climatology dataset"""
@@ -120,11 +156,7 @@ class Standardizer:
         variables = {
             name: DataArray(mat[name], dims=tuple(coords), coords=coords)
             for name in mat
-            if (
-                name not in tuple(coords)
-                and not name.startswith("_")
-                and name != "PCENT"
-            )
+            if (name not in coords and not name.startswith("_") and name != "PCENT")
         }
 
         # Initialize dataset
@@ -132,7 +164,16 @@ class Standardizer:
         ds = ds.rename_dims(X="station")
         ds["station"] = ds["station"]
 
+        # Center at the sill
+        notnull_count = ds["SIG"].notnull().sum("Y")
+        sill_station = (
+            ds["station"].where(notnull_count == notnull_count.max()).mean().round()
+        )
+        ds["X"] = ds["X"] - ds["X"][int(sill_station)]
+
         # Add coordinates
+        ds = ds.merge(self._interpolate_latrabjarg_bathymetry(ds["X"]))
+        ds = ds.set_coords(["longitude", "latitude"])
         ds["X"] = ds["X"] * 1.0e3
 
         # Manually add CF attributes
@@ -141,7 +182,7 @@ class Standardizer:
                 "standard_name": "depth",
                 "positive": "down",
             },
-            X={"long_name": "distance", "units": "m"},
+            X={"long_name": "distance from sill", "units": "m"},
             station={"long_name": "station id"},
             num_data={"long_name": "occupations"},
             SIG={
