@@ -2,4 +2,10 @@ name: nordic-seas-validation
 channels:
   - conda-forge
 dependencies:
+  - bottleneck
+  - cf_xarray
+  - dask
+  - netCDF4
   - pooch
+  - scipy
+  - xarray
