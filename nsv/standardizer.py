@@ -75,6 +75,7 @@ class Standardizer:
         for coord in ("lon", "lat"):
             interp[coord][-1] = mooring[coord][-1]
             ds = ds.assign_coords({coord: interp[coord]})
+        ds["xvec"] = ds["xvec"] * 1.0e3
 
         # Manually add CF attributes
         attrs_dict = dict(
@@ -84,7 +85,7 @@ class Standardizer:
                 "long_name": "depth of gridded product",
                 "positive": "down",
             },
-            xvec={"long_name": "distance vector for gridded product"},
+            xvec={"long_name": "distance vector for gridded product", "units": "m"},
             station={"long_name": "station id"},
             lon={"standard_name": "longitude"},
             lat={"standard_name": "latitude"},
