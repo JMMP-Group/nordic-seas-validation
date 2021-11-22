@@ -14,25 +14,13 @@ python -c "import nsv"
 ## Raw data
 [JMMP GWS](https://gws-access.jasmin.ac.uk/public/jmmp/NORVAL/)
 
-| NAME | REFERENCE |
-|---|---|
-| EEL | [Loïc Houpert GitHub](https://github.com/lhoupert/analysis_eel_data)
-| FIM | [10.7489/2036-1](https://doi.org/10.7489/2036-1) |
-| Kögur | [kogur.whoi.edu](http://kogur.whoi.edu/php/index.php#gridded) |
-| Látrabjarg (climatology) | [Mastropole et al., 2017](https://doi.org/10.1002/2016JC012007) |
-| Látrabjarg (survey) | [Våge et al., 2011](https://doi.org/10.1038/ngeo1234) |
-| NOAA Arctic Climatology | [10.7289/v5qc01j0](https://doi.org/10.7289/v5qc01j0) |
-| OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) |
-| OVIDE | [10.17882/46446](https://doi.org/10.17882/46446)
-
-
-## Standardize raw data
-
-```python
-from nsv import Standardizer
-ds_fim_1m = Standardizer(raw_data_path=None).fim_1m
-ds_fim_25m = Standardizer(raw_data_path=None).fim_25m
-ds_kogur = Standardizer(raw_data_path=None).kogur
-ds_lat_clim = Standardizer(raw_data_path=None).latrabjarg_climatology
-ds_lat_surv = Standardizer(raw_data_path=None).latrabjarg_survey
-```
+| NAME | REFERENCE | FUNCTION
+|---|---|---|
+| EEL | [Loïc Houpert GitHub](https://github.com/lhoupert/analysis_eel_data) | |
+| FIM | [10.7489/2036-1](https://doi.org/10.7489/2036-1) | `nsv.Standardizer().fim_1m`<br> `nsv.Standardizer().fim_25m` |
+| Kögur | [kogur.whoi.edu](http://kogur.whoi.edu/php/index.php#gridded) | `nsv.Standardizer().kogur` |
+| Látrabjarg (climatology) | [Mastropole et al., 2017](https://doi.org/10.1002/2016JC012007) | `nsv.Standardizer().latrabjarg_climatology` |
+| Látrabjarg (survey) | [Våge et al., 2011](https://doi.org/10.1038/ngeo1234) | `nsv.Standardizer().latrabjarg_survey` |
+| NOAA Arctic Climatology | [10.7289/v5qc01j0](https://doi.org/10.7289/v5qc01j0) | |
+| OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) | |
+| OVIDE | [10.17882/46446](https://doi.org/10.17882/46446) |
