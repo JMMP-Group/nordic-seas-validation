@@ -22,5 +22,5 @@ python -c "import nsv"
 | Látrabjarg (climatology) | [Mastropole et al., 2017](https://doi.org/10.1002/2016JC012007) | `nsv.Standardizer().latrabjarg_climatology` |
 | Látrabjarg (survey) | [Våge et al., 2011](https://doi.org/10.1038/ngeo1234) | `nsv.Standardizer().latrabjarg_survey` |
 | NOAA Arctic Climatology | [10.7289/v5qc01j0](https://doi.org/10.7289/v5qc01j0) | |
-| OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) | |
+| OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) | `nsv.Standardizer().osnap` |
 | OVIDE | [10.17882/46446](https://doi.org/10.17882/46446) |
