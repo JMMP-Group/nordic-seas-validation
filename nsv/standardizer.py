@@ -7,7 +7,7 @@ import xarray as xr
 from scipy.io import loadmat
 from xarray import DataArray, Dataset
 
-from .utils import add_attributes_and_rename_variables, add_cf_attributes
+from .utils import add_attributes_and_rename_variables, add_cf_attributes, compute_pt0
 
 
 @dataclass
@@ -285,6 +285,9 @@ class Standardizer:
         )
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
         return add_cf_attributes(ds)
 
     @property
@@ -308,6 +311,9 @@ class Standardizer:
             station={"long_name": "station id"},
         )
         ds = add_attributes_and_rename_variables(ds, attrs)
+
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
 
         return add_cf_attributes(ds)
 

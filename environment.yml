@@ -5,7 +5,9 @@ dependencies:
   - bottleneck
   - cf_xarray
   - dask
+  - gsw
   - netCDF4
+  - pandas
   - pooch
   - scipy
   - xarray
