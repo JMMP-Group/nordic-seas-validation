@@ -279,10 +279,34 @@ class Standardizer:
             lon={"standard_name": "longitude"},
             bathy={"standard_name": "sea_floor_depth_below_geoid"},
             temp={
-                "standard_name": "sea_water_potential_temperature",
+                "standard_name": "sea_water_temperature",
             },
             sal={"standard_name": "sea_water_practical_salinity"},
         )
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
+
+        return add_cf_attributes(ds)
+
+    @property
+    def osnap(self) -> Dataset:
+        """Standardized OSNAP dataset"""
+
+        # Open NetCDF file
+        filenames = [
+            self.raw_pooch.fetch(f"OSNAP/OSNAP_{file}_201408_201604_2018.nc")
+            for file in ("Gridded_TS", "Transports")
+        ]
+        ds = xr.open_mfdataset(filenames)
+        ds.attrs = {"featureType": "timeSeries"}
+
+        # Rename dimensions
+        ds = ds.rename_dims(LONGITUDE="station", LATITUDE="station")
+        ds["station"] = ds["station"]
+
+        # Manually add CF attributes
+        dict(
+            station={"long_name": "station id"},
+        )
+        ds = add_attributes_and_rename_variables(ds, {})
 
         return add_cf_attributes(ds)
