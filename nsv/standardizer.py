@@ -65,7 +65,7 @@ class Standardizer:
         for coord in ("lon", "lat"):
             interp[coord][-1] = moorings[coord][-1]
             ds = ds.assign_coords({coord: interp[coord]})
-        ds["xvec"] = ds["xvec"] * 1.0e3
+        ds["xvec"] = ds["xvec"]
 
         # Manually add CF attributes
         attrs_dict = dict(
@@ -173,7 +173,7 @@ class Standardizer:
         # Add coordinates
         ds = ds.merge(self._interpolate_latrabjarg_bathymetry(ds["X"]))
         ds = ds.set_coords(["longitude", "latitude"])
-        ds["X"] = ds["X"] * 1.0e3
+        ds["X"] = ds["X"]
 
         return ds
 
@@ -194,7 +194,7 @@ class Standardizer:
                 "standard_name": "depth",
                 "positive": "down",
             },
-            X={"long_name": "distance from sill", "units": "m"},
+            X={"long_name": "distance from sill", "units": "km"},
             station={"long_name": "station id"},
             num_data={"long_name": "occupations"},
             SIG={
@@ -231,7 +231,7 @@ class Standardizer:
                 "standard_name": "depth",
                 "positive": "down",
             },
-            X={"long_name": "distance from sill", "units": "m"},
+            X={"long_name": "distance from sill", "units": "km"},
             station={"long_name": "station id"},
             OrtVel={"long_name": "through section velocity", "units": "m s-1"},
         )
@@ -304,9 +304,75 @@ class Standardizer:
         ds["station"] = ds["station"]
 
         # Manually add CF attributes
-        dict(
+        attrs = dict(
             station={"long_name": "station id"},
         )
-        ds = add_attributes_and_rename_variables(ds, {})
+        ds = add_attributes_and_rename_variables(ds, attrs)
 
         return add_cf_attributes(ds)
+
+    @property
+    def ovide(self) -> Dataset:
+        """Standardized OVIDE dataset"""
+
+        # Open NetCDF file
+        filename = self.raw_pooch.fetch("OVIDE/Daniault_2016_climatology.nc")
+        ds = xr.open_mfdataset(filename)
+        ds.attrs = {"featureType": "timeSeries"}
+
+        # Rename dimensions
+        ds = ds.rename_dims(Dist="station", DistTr="mid_station")
+        ds = ds.rename(Distance="distance", Dist_Transport="mid_distance")
+        ds = ds.drop("Year")
+        ds["station"] = ds["station"]
+        ds["mid_station"] = ds["mid_station"] + 0.5
+
+        # STATION
+        # Manually add CF attributes
+        attrs = dict(
+            Depth={"standard_name": "depth"},
+            station={"long_name": "station id"},
+            Longitude={"standard_name": "longitude"},
+            Latitude={"standard_name": "latitude"},
+            Bottom={"standard_name": "sea_floor_depth_below_geoid"},
+            SAL={"standard_name": "sea_water_practical_salinity"},
+            TPOT={"standard_name": "sea_water_potential_temperature"},
+            SIG0={"standard_name": "sea_water_sigma_theta"},
+        )
+        ds_station = ds.drop_dims("mid_station")
+        ds_station = add_attributes_and_rename_variables(ds_station, attrs)
+
+        # Sigmas
+        pressures = [1, 2, 4]
+        sig = xr.concat(
+            [ds_station[f"SIG{i}"] for i in pressures], "reference_pressure"
+        )
+        sig["reference_pressure"] = DataArray(
+            [i * 1.0e7 for i in pressures],
+            dims="reference_pressure",
+            attrs={"standard_name": "reference_pressure"},
+        )
+        sig.attrs["standard_name"] = "sea_water_sigma_theta"
+        ds_station = ds_station.drop((f"SIG{i}" for i in pressures))
+        ds_station["SIG"] = sig
+
+        # MID STATION
+        # Manually add CF attributes
+        attrs = dict(
+            Depth={"standard_name": "depth"},
+            mid_station={"long_name": "mid station id"},
+            Lon_Transport={"standard_name": "longitude"},
+            Lat_Transport={"standard_name": "latitude"},
+            Bottom_Transport={"standard_name": "sea_floor_depth_below_geoid"},
+        )
+        ds_mid = ds.drop_dims("station")
+        ds_mid = add_attributes_and_rename_variables(ds_mid, attrs)
+        ds_mid = ds_mid.rename(
+            {
+                var: f"mid_{var}"
+                for var, da in ds_mid.data_vars.items()
+                if "mid_station" in da.dims
+            }
+        )
+
+        return add_cf_attributes(ds_station.merge(ds_mid))
