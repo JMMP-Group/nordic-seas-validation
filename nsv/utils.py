@@ -3,6 +3,10 @@ from xarray import Dataset
 
 
 def add_cf_attributes(ds: Dataset) -> Dataset:
+    coords = ["longitude", "latitude", "distance"]
+    ds = ds.set_coords(
+        [var for var in ds.data_vars for coord in coords if coord in var]
+    )
     return ds.cf.guess_coord_axis().cf.add_canonical_attributes()
 
 
