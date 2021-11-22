@@ -8,7 +8,7 @@ def add_cf_attributes(ds: Dataset) -> Dataset:
 
 def add_attributes_and_rename_variables(ds: Dataset, attrs_dict: dict) -> Dataset:
     for var, attrs in attrs_dict.items():
-        ds[var].attrs = attrs
+        ds[var].attrs = {**ds[var].attrs, **attrs}
         if "standard_name" in attrs:
             ds = ds.rename(
                 {

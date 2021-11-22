@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 import pooch
+import xarray as xr
 from scipy.io import loadmat
 from xarray import DataArray, Dataset
 
@@ -85,6 +86,7 @@ class Standardizer:
             Tfinal1={
                 "standard_name": "sea_water_potential_temperature",
                 "long_name": "Potential Temperature",
+                "units": "degree_C",
             },
             PDfinal1={
                 "standard_name": "sea_water_sigma_theta",
@@ -201,7 +203,7 @@ class Standardizer:
             THE={
                 "standard_name": "sea_water_potential_temperature",
             },
-            SAL={"standard_name": "sea_water_salinity"},
+            SAL={"standard_name": "sea_water_practical_salinity"},
             NSQ={"standard_name": "square_of_brunt_vaisala_frequency_in_sea_water"},
         )
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
@@ -221,6 +223,7 @@ class Standardizer:
 
         # Create dataset
         ds = self._initialize_latrabjarg(mat)
+        ds["station"] = ds["station"]
 
         # Manually add CF attributes
         attrs_dict = dict(
@@ -236,5 +239,50 @@ class Standardizer:
 
         # Rename
         ds = ds.rename(X="dist", OrtVel="through_section_velocity")
+
+        return add_cf_attributes(ds)
+
+    @property
+    def fim_1m(self) -> Dataset:
+        """Standardized FIM in 1m depth bins"""
+
+        return self._fim(1)
+
+    @property
+    def fim_25m(self) -> Dataset:
+        """Standardized FIM in 25m depth bins"""
+
+        return self._fim(25)
+
+    def _fim(self, resolution) -> Dataset:
+        """Standardized FIM dataset"""
+
+        # Open NetCDF file
+        filename = self.raw_pooch.fetch(f"FIM/FIM_CTD_{resolution}m.nc")
+        ds = xr.open_mfdataset(filename)
+        ds.attrs = {"featureType": "timeSeries"}
+
+        # Drop variables
+        ds = ds.drop(
+            (
+                var
+                for var in ds.variables
+                if var.split("_")[0] in ["stn", "ctd", "cruise"]
+            )
+        )
+
+        # Manually add CF attributes
+        attrs_dict = dict(
+            pressure={"standard_name": "depth", "positive": "down", "units": "m"},
+            station={"long_name": "station id"},
+            lat={"standard_name": "latitude"},
+            lon={"standard_name": "longitude"},
+            bathy={"standard_name": "sea_floor_depth_below_geoid"},
+            temp={
+                "standard_name": "sea_water_potential_temperature",
+            },
+            sal={"standard_name": "sea_water_practical_salinity"},
+        )
+        ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         return add_cf_attributes(ds)

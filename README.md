@@ -30,6 +30,8 @@ python -c "import nsv"
 
 ```python
 from nsv import Standardizer
+ds_fim_1m = Standardizer(raw_data_path=None).fim_1m
+ds_fim_25m = Standardizer(raw_data_path=None).fim_25m
 ds_kogur = Standardizer(raw_data_path=None).kogur
 ds_lat_clim = Standardizer(raw_data_path=None).latrabjarg_climatology
 ds_lat_surv = Standardizer(raw_data_path=None).latrabjarg_survey
