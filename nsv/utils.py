@@ -46,5 +46,6 @@ def compute_pt0(ds: Dataset) -> Dataset:
 
     return pt0.cf.add_canonical_attributes()
 
+
 def dms2d(Deg: float, Min: float, Sec: float) -> float:
-    return Deg + (Min/60.) + (Sec/3600.)
+    return Deg + (Min / 60.0) + (Sec / 3600.0)
