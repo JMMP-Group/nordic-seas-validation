@@ -45,3 +45,6 @@ def compute_pt0(ds: Dataset) -> Dataset:
     pt0.attrs = {"standard_name": "sea_water_potential_temperature"}
 
     return pt0.cf.add_canonical_attributes()
+
+def dms2d(Deg,Min,Sec):
+    return Deg + (Min/60.) + (Sec/3600.)
