@@ -404,7 +404,7 @@ class Standardizer:
         dfT = df_T.loc[:, "S1":"S15"]
         dfS = df_S.loc[:, "S1":"S15"]
         dfD = df_T.loc[:, "Depth"]
-        dfC = df_C.loc[:, "LAT deg":"LON min"]
+        dfC = df_C.loc[:, "LON deg":"LAT min"]
         dfT = dfT.apply(pd.to_numeric, errors="coerce")
         dfS = dfS.apply(pd.to_numeric, errors="coerce")
         dfD = dfD.apply(pd.to_numeric, errors="coerce")
