@@ -382,3 +382,49 @@ class Standardizer:
         )
 
         return add_cf_attributes(ds_station.merge(ds_mid))
+
+    @property
+    def eel(self):
+        """Standardized EEL dataset"""
+
+        # Open CSV file
+        data_name = self.raw_pooch.fetch("EEL/csv_ctdgrid/EELCTDandLADCP_3Dfield.csv")
+        coords_name = self.raw_pooch.fetch("EEL/csv_ctdgrid/EELCTDandLADCP_refpos.csv")
+        pd_args = {"sep": ",", "index_col": None, "header": 0}
+        df_coords = pd.read_csv(coords_name, **pd_args)
+        df_data = pd.read_csv(data_name, **pd_args)
+
+        # Transform to Dataset
+        indexes = ["Refdist", "Year", "Depth"]
+        ds_coords = df_coords.set_index("Refdist").sort_values("Refdist").to_xarray()
+        ds_data = df_data.set_index(indexes).sort_values(indexes).to_xarray()
+        ds = xr.merge([ds_coords, ds_data])
+        ds.attrs = {"featureType": "timeSeries"}
+
+        # Rename dimensions and assign coordinates
+        ds = ds.rename(Staname="station", Refdist="distance")
+        ds["station"] = ds["station"].isel(Year=0, Depth=0)
+        ds = ds.swap_dims(distance="station")
+        ds["Year"] = pd.to_datetime(ds["Year"].astype(str))
+
+        # Manually add CF attributes
+        attrs = dict(
+            distance={"long_name": "distance", "units": "km"},
+            station={"long_name": "station id"},
+            Year={"standard_name": "time"},
+            Depth={"standard_name": "depth", "positive": "down"},
+            CruiseID={"long_name": "cruise id"},
+            LonSta={"standard_name": "longitude"},
+            LatSta={"standard_name": "latitude"},
+            DepthSta={"standard_name": "sea_floor_depth_below_geoid"},
+            PTMP={"standard_name": "sea_water_potential_temperature"},
+            PSAL={"standard_name": "sea_water_practical_salinity"},
+            Sigma0={"standard_name": "sea_water_sigma_theta"},
+            Vrel={"long_name": "relative velocity", "units": "m s-1"},
+            Vladcp={"long_name": "LADCP through section velocity", "units": "m s-1"},
+            Vabs={"long_name": "absolute velocity", "units": "m s-1"},
+            Vladcpalong={"long_name": "LADCP cross section velocity", "units": "m s-1"},
+        )
+        ds = add_attributes_and_rename_variables(ds, attrs)
+
+        return add_cf_attributes(ds)

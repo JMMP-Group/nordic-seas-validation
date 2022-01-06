@@ -16,7 +16,7 @@ python -c "import nsv"
 
 | NAME | REFERENCE | FUNCTION
 |---|---|---|
-| EEL | [Loïc Houpert GitHub](https://github.com/lhoupert/analysis_eel_data) | |
+| EEL | [Loïc Houpert GitHub](https://github.com/lhoupert/analysis_eel_data) | `nsv.Standardizer().eel` |
 | FIM | [10.7489/2036-1](https://doi.org/10.7489/2036-1) | `nsv.Standardizer().fim_1m`<br> `nsv.Standardizer().fim_25m` |
 | Kögur | [kogur.whoi.edu](http://kogur.whoi.edu/php/index.php#gridded) | `nsv.Standardizer().kogur` |
 | Látrabjarg (climatology) | [Mastropole et al., 2017](https://doi.org/10.1002/2016JC012007) | `nsv.Standardizer().latrabjarg_climatology` |
