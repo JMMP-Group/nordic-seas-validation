@@ -523,12 +523,12 @@ class Standardizer:
         sec1 = list(range(322, 333)) + list(range(334, 337))
         sec2 = range(337, 345)
         sec3 = range(347, 363)
-        sec4 = range(363, 379)
+        sec4 = list(range(363, 379))[::-1]
         sec5 = range(379, 387)
-        sec6 = list(range(387, 396)) + list(range(401, 407))
+        sec6 = (list(range(387, 396)) + list(range(401, 407)))[::-1]
         sec7 = range(407, 427)
         sec8 = list(range(437, 445)) + list(range(430, 426, -1))
-        sec9 = range(451, 457)
+        sec9 = list(range(451, 457))[::-1]
 
         SECS = [sec1, sec2, sec3, sec4, sec5, sec6, sec7, sec8, sec9]
         sec = SECS[section]
