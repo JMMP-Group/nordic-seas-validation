@@ -415,8 +415,8 @@ class Standardizer:
         lat = []
         lon = []
         for n in range(COORD.shape[0]):
-            lat.append(dms2d(COORD[n, 0], COORD[n, 1], 0.0))
-            lon.append(dms2d(COORD[n, 2], COORD[n, 3], 0.0))
+            lon.append(dms2d(COORD[n, 0], COORD[n, 1], 0.0))
+            lat.append(dms2d(COORD[n, 2], COORD[n, 3], 0.0))
 
         # Initialize dataset
         ds = Dataset(
