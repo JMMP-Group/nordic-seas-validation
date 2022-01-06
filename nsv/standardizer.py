@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass
 
+import numpy as np
 import pandas as pd
 import pooch
 import xarray as xr
@@ -419,7 +420,7 @@ class Standardizer:
         # Initialize dataset
         ds = Dataset(
             data_vars=dict(
-                TPOT=(["Depth", "station"], dfT.to_numpy()),
+                TEM=(["Depth", "station"], dfT.to_numpy()),
                 SAL=(["Depth", "station"], dfS.to_numpy()),
                 Longitude=(
                     [
@@ -448,8 +449,176 @@ class Standardizer:
             Longitude={"standard_name": "longitude"},
             Latitude={"standard_name": "latitude"},
             SAL={"standard_name": "sea_water_practical_salinity"},
-            TPOT={"standard_name": "sea_water_potential_temperature"},
+            TEM={"standard_name": "sea_water_temperature"},
         )
         ds = add_attributes_and_rename_variables(ds, attrs)
 
-        return ds
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
+        return add_cf_attributes(ds)
+
+    @property
+    def Q2018_sec1(self) -> Dataset:
+        """Standardized Section 1 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(0)
+
+    @property
+    def Q2018_sec2(self) -> Dataset:
+        """Standardized Section 2 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(1)
+
+    @property
+    def Q2018_sec3(self) -> Dataset:
+        """Standardized Section 3 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(2)
+
+    @property
+    def Q2018_sec4(self) -> Dataset:
+        """Standardized Section 4 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(3)
+
+    @property
+    def Q2018_sec5(self) -> Dataset:
+        """Standardized Section 5 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(4)
+
+    @property
+    def Q2018_sec6(self) -> Dataset:
+        """Standardized Section 6 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(5)
+
+    @property
+    def Q2018_sec7(self) -> Dataset:
+        """Standardized Section 7 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(6)
+
+    @property
+    def Q2018_sec8(self) -> Dataset:
+        """Standardized Section 8 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(7)
+
+    @property
+    def Q2018_sec9(self) -> Dataset:
+        """Standardized Section 9 of Quadfasel et al 2018 dataset"""
+
+        return self._Q2018(8)
+
+    def _Q2018(self, section) -> Dataset:
+        """Standardized Quadfasel et al 2018 dataset"""
+
+        filename = self.raw_pooch.fetch("Quadfasel_2018/M82-1_CTD.tab")
+        df = pd.read_csv(filename, sep="\t", header=176)
+
+        # Creating Sections
+        sec1 = list(range(322, 333)) + list(range(334, 337))
+        sec2 = range(337, 345)
+        sec3 = range(347, 363)
+        sec4 = range(363, 379)
+        sec5 = range(379, 387)
+        sec6 = list(range(387, 396)) + list(range(401, 407))
+        sec7 = range(407, 427)
+        sec8 = list(range(437, 445)) + list(range(430, 426, -1))
+        sec9 = range(451, 457)
+
+        SECS = [sec1, sec2, sec3, sec4, sec5, sec6, sec7, sec8, sec9]
+        sec = SECS[section]
+
+        # Finding stations of the chosen section
+        Stations = []
+        for st in range(len(sec)):
+            s = "M82/1_" + str(sec[st])
+            Stations.append(s)
+            if st == 0:
+                df_s = df[df["Event"] == s]
+            else:
+                df_s = pd.concat([df_s, df[df["Event"] == s]])
+
+        # Creating variables array
+        Depths = np.unique(np.around(df_s["Depth water [m]"], decimals=1))[::1]
+        nx = len(Stations)
+        nk = len(Depths)
+        Tem = np.ones((nk, nx)) * -99999.9
+        Sal = np.ones((nk, nx)) * -99999.9
+        Time = []
+        Lon = []
+        Lat = []
+        Baty = []
+
+        for s in range(len(Stations)):
+            DF = df_s[df_s["Event"] == Stations[s]]
+            Time.append(np.unique(DF["Date/Time"])[0])
+            Lon.append(np.unique(DF["Longitude"])[0])
+            Lat.append(np.unique(DF["Latitude"])[0])
+            Baty.append(-np.unique(DF["Elevation [m]"])[0])
+            for z in range(len(Depths)):
+                depth_z = DF["Depth water [m]"]
+                df_z = DF[np.around(depth_z, decimals=1) == Depths[z]]
+                if len(df_z) > 0:
+                    if len(df_z) > 1:
+                        df_T = df_z["Temp [°C]"]
+                        df_S = df_z["Sal"]
+                        Tem[z, s] = df_T[df_T.index[0]]
+                        Sal[z, s] = df_S[df_S.index[0]]
+                    else:
+                        Tem[z, s] = df_z["Temp [°C]"]
+                        Sal[z, s] = df_z["Sal"]
+                elif Depths[z] <= depth_z[depth_z.index[-1]]:
+                    Tem[z, s] = np.nan
+                    Sal[z, s] = np.nan
+
+        # Creating Dataset
+        ds = Dataset(
+            data_vars=dict(
+                TEM=(["Depth", "station"], Tem),
+                SAL=(["Depth", "station"], Sal),
+            ),
+            coords=dict(
+                station=(["station"], sec),
+                Depth=(["Depth"], Depths),
+            ),
+            attrs=dict(
+                description="Section "
+                + str(section + 1)
+                + " of Quadfasel et al 2018 dataset"
+            ),
+        )
+
+        # Dropping Nan and masking land
+        ds = ds.dropna("Depth")
+        ds = ds.where(ds > -99999.9, np.nan)
+
+        # Adding Time, Topography, Lon and Lat variables
+        daTime = DataArray(Time, coords=[sec], dims=["station"])
+        daBaty = DataArray(Baty, coords=[sec], dims=["station"])
+        daLon = DataArray(Lon, coords=[sec], dims=["station"])
+        daLat = DataArray(Lat, coords=[sec], dims=["station"])
+
+        ds["Time"] = daTime
+        ds["Topography"] = daBaty
+        ds["Longitude"] = daLon
+        ds["Latitude"] = daLat
+
+        # Manually add CF attributes
+        attrs = dict(
+            Depth={"standard_name": "depth"},
+            station={"long_name": "station id"},
+            Longitude={"standard_name": "longitude"},
+            Latitude={"standard_name": "latitude"},
+            SAL={"standard_name": "sea_water_practical_salinity"},
+            TEM={"standard_name": "sea_water_temperature"},
+        )
+        ds = add_attributes_and_rename_variables(ds, attrs)
+
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
+        return add_cf_attributes(ds)
