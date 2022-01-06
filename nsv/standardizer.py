@@ -624,6 +624,7 @@ class Standardizer:
 
         return add_cf_attributes(ds)
 
+    @property
     def eel(self) -> Dataset:
         """Standardized EEL dataset"""
 
