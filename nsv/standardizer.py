@@ -717,6 +717,8 @@ class Standardizer:
 
         # Creating variables array
         Stations = np.unique(dfCTD["Event"])
+        if sec == "B" or sec == "E":
+            Stations = Stations[::-1]
         Depths = -z_from_p(
             dfCTD["Press [dbar]"],
             dfCTD["Latitude"],
