@@ -391,66 +391,43 @@ class Standardizer:
         return add_cf_attributes(ds_station.merge(ds_mid))
 
     @property
-    def HO2000(self) -> Dataset:
+    def ho2000(self) -> Dataset:
         """Standardized Hansen & Osterhus 2000 dataset"""
 
-        Tfilename = self.raw_pooch.fetch("Hansen_Osterhus_2000/Tem_data.csv")
-        Sfilename = self.raw_pooch.fetch("Hansen_Osterhus_2000/Sal_data.csv")
-        Cfilename = self.raw_pooch.fetch("Hansen_Osterhus_2000/Stations_coord.csv")
+        # Read variables
+        dataframes = {}
+        for var in ("Tem", "Sal"):
+            filename = self.raw_pooch.fetch(f"Hansen_Osterhus_2000/{var}_data.csv")
+            df = pd.read_csv(filename, index_col="Depth")
+            dataframes[var] = df.apply(pd.to_numeric, errors="coerce")
+        ds = Dataset(dataframes).rename(dim_1="Stations")
+        ds.attrs = {
+            "featureType": "timeSeries",
+            "description": "Hansen & Osterhus 2000 dataset",
+        }
 
-        df_T = pd.read_csv(Tfilename)
-        df_S = pd.read_csv(Sfilename)
-        df_C = pd.read_csv(Cfilename)
-        dfT = df_T.loc[:, "S1":"S15"]
-        dfS = df_S.loc[:, "S1":"S15"]
-        dfD = df_T.loc[:, "Depth"]
-        dfC = df_C.loc[:, "LON deg":"LAT min"]
-        dfT = dfT.apply(pd.to_numeric, errors="coerce")
-        dfS = dfS.apply(pd.to_numeric, errors="coerce")
-        dfD = dfD.apply(pd.to_numeric, errors="coerce")
-        dfC = dfC.apply(pd.to_numeric, errors="coerce")
-
-        # Converting Lat and Lon
-        COORD = dfC.to_numpy()
-        lat = []
-        lon = []
-        for n in range(COORD.shape[0]):
-            lon.append(dms2d(COORD[n, 0], COORD[n, 1], 0.0))
-            lat.append(dms2d(COORD[n, 2], COORD[n, 3], 0.0))
-
-        # Initialize dataset
-        ds = Dataset(
-            data_vars=dict(
-                TEM=(["Depth", "station"], dfT.to_numpy()),
-                SAL=(["Depth", "station"], dfS.to_numpy()),
-                Longitude=(
-                    [
-                        "station",
-                    ],
-                    lon,
-                ),
-                Latitude=(
-                    [
-                        "station",
-                    ],
-                    lat,
-                ),
-            ),
-            coords=dict(
-                station=(["station"], range(1, 16)),
-                Depth=(["Depth"], dfD.to_numpy()),
-            ),
-            attrs=dict(description="Hansen & Osterhus 2000 dataset"),
+        # Assign coordinates
+        coords_name = self.raw_pooch.fetch("Hansen_Osterhus_2000/Stations_coord.csv")
+        coords_df = pd.read_csv(coords_name).set_index("Stations")
+        coords_ds = Dataset(coords_df).drop("Stations")
+        ds = ds.assign_coords(
+            {
+                pref: dms2d(*[coords_ds[f"{pref} {suff}"] for suff in ("deg", "min")])
+                for pref in ("LON", "LAT")
+            }
         )
+
+        # Rename dimensions
+        ds = ds.rename(Stations="station")
 
         # Manually add CF attributes
         attrs = dict(
             Depth={"standard_name": "depth"},
             station={"long_name": "station id"},
-            Longitude={"standard_name": "longitude"},
-            Latitude={"standard_name": "latitude"},
-            SAL={"standard_name": "sea_water_practical_salinity"},
-            TEM={"standard_name": "sea_water_temperature"},
+            LON={"standard_name": "longitude"},
+            LAT={"standard_name": "latitude"},
+            Sal={"standard_name": "sea_water_practical_salinity"},
+            Tem={"standard_name": "sea_water_temperature"},
         )
         ds = add_attributes_and_rename_variables(ds, attrs)
 
