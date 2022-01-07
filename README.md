@@ -24,4 +24,6 @@ python -c "import nsv"
 | NOAA Arctic Climatology | [10.7289/v5qc01j0](https://doi.org/10.7289/v5qc01j0) | |
 | OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) | `nsv.Standardizer().osnap` |
 | OVIDE | [10.17882/46446](https://doi.org/10.17882/46446) | `nsv.Standardizer().ovide` |
-| HO2000 | [Hansen & Osterhus 2000](https://doi.org/10.1016/S0079-6611(99)00052-X) | `nsv.Standardizer().HO2000` |
+| HO2000 | [Hansen & Osterhus 2000](https://doi.org/10.1016/S0079-6611(99)00052-X) | `nsv.Standardizer().ho2000` |
+| Q2018 | [Quadfasel et al. 2018](https://doi.pangaea.de/10.1594/PANGAEA.890362) | `nsv.Standardizer().q2018` |
+| S2020 | [Semper et al. 2020](https://www.nature.com/articles/s41467-020-19049-5) | `nsv.Standardizer().s2020` |
