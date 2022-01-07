@@ -407,8 +407,8 @@ class Standardizer:
         }
 
         # Assign coordinates
-        coords_name = self.raw_pooch.fetch("Hansen_Osterhus_2000/Stations_coord.csv")
-        coords_df = pd.read_csv(coords_name).set_index("Stations")
+        coords_fname = self.raw_pooch.fetch("Hansen_Osterhus_2000/Stations_coord.csv")
+        coords_df = pd.read_csv(coords_fname).set_index("Stations")
         coords_ds = Dataset(coords_df).drop("Stations")
         ds = ds.assign_coords(
             {
