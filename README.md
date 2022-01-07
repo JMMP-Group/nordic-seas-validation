@@ -25,5 +25,17 @@ python -c "import nsv"
 | OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) | `nsv.Standardizer().osnap` |
 | OVIDE | [10.17882/46446](https://doi.org/10.17882/46446) | `nsv.Standardizer().ovide` |
 | HO2000 | [Hansen & Osterhus 2000](https://doi.org/10.1016/S0079-6611(99)00052-X) | `nsv.Standardizer().ho2000` |
-| Q2018 | [Quadfasel et al. 2018](https://doi.pangaea.de/10.1594/PANGAEA.890362) | `nsv.Standardizer().q2018` |
-| S2020 | [Semper et al. 2020](https://www.nature.com/articles/s41467-020-19049-5) | `nsv.Standardizer().s2020` |
+| Q2018 | [Quadfasel et al. 2018](https://doi.pangaea.de/10.1594/PANGAEA.890362) | `nsv.Standardizer().q2018_sec1` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec2` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec3` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec4` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec5` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec6` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec7` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec8` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec9` |
+| S2020 | [Semper et al. 2020](https://www.nature.com/articles/s41467-020-19049-5) | `nsv.Standardizer().s2020_secA` |
+|       |                                                                          | `nsv.Standardizer().s2020_secB` |
+|       |                                                                          | `nsv.Standardizer().s2020_secC` |
+|       |                                                                          | `nsv.Standardizer().s2020_secD` |
+|       |                                                                          | `nsv.Standardizer().s2020_secE` |
