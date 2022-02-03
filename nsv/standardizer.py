@@ -666,7 +666,7 @@ class Standardizer:
         sec = sec.upper()
         ok_sec = list(ascii_uppercase[:5])
         if sec not in ok_sec:
-            raise ValueError(f"{sec} is not avilable. Available sections: {ok_sec!r}")
+            raise ValueError(f"{sec} is not available. Available sections: {ok_sec!r}")
 
         # Open CSV file
         fname = self.raw_pooch.fetch(f"Semper_2020/CTD/Section{sec}_NEIceland_CTD.tab")
