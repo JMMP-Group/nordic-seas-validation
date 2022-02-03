@@ -24,4 +24,18 @@ python -c "import nsv"
 | NOAA Arctic Climatology | [10.7289/v5qc01j0](https://doi.org/10.7289/v5qc01j0) | |
 | OSNAP | [10.7924/r4z60gf0f](https://doi.org/10.7924/r4z60gf0f) | `nsv.Standardizer().osnap` |
 | OVIDE | [10.17882/46446](https://doi.org/10.17882/46446) | `nsv.Standardizer().ovide` |
-| HO2000 | [Hansen & Osterhus 2000](https://doi.org/10.1016/S0079-6611(99)00052-X) | `nsv.Standardizer().HO2000` |
+| HO2000 | [Hansen & Osterhus 2000](https://doi.org/10.1016/S0079-6611(99)00052-X) | `nsv.Standardizer().ho2000` |
+| Q2018 | [Quadfasel et al. 2018](https://doi.pangaea.de/10.1594/PANGAEA.890362) | `nsv.Standardizer().q2018_sec1` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec2` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec3` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec4` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec5` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec6` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec7` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec8` |
+|       |                                                                        | `nsv.Standardizer().q2018_sec9` |
+| KN203-2 | [10.1594/PANGAEA.919251-2](https://doi.pangaea.de/10.1594/PANGAEA.919251) | `nsv.Standardizer().kn203_2("A")` |
+|         |                                                                       | `nsv.Standardizer().kn203_2("B")` |
+|         |                                                                       | `nsv.Standardizer().kn203_2("C")` |
+|         |                                                                       | `nsv.Standardizer().kn203_2("D")` |
+|         |                                                                       | `nsv.Standardizer().kn203_2("E")` |

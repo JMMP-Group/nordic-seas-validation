@@ -1,11 +1,11 @@
 import os
 from dataclasses import dataclass
+from string import ascii_uppercase
 
 import numpy as np
 import pandas as pd
 import pooch
 import xarray as xr
-from gsw import z_from_p
 from scipy.io import loadmat
 from xarray import DataArray, Dataset
 
@@ -647,132 +647,62 @@ class Standardizer:
 
         return add_cf_attributes(ds)
 
-    @property
-    def S2020_secA(self) -> Dataset:
-        """Standardized Section A of Semper et al 2020 dataset"""
+    def kn203_2(self, sec: str) -> Dataset:
+        """
+        Standardized Knorr cruise KN203-2
 
-        return self._S2020("A")
+        Parameters
+        ----------
+        sec: str, {"A", "B", "C", "D", "E"}
+            Section ID
 
-    @property
-    def S2020_secB(self) -> Dataset:
-        """Standardized Section B of Semper et al 2020 dataset"""
+        Returns
+        -------
+        ds: Dataset
+            Standardized dataset
+        """
 
-        return self._S2020("B")
+        # Check input
+        sec = sec.upper()
+        ok_sec = list(ascii_uppercase[:5])
+        if sec not in ok_sec:
+            raise ValueError(f"{sec} is not available. Available sections: {ok_sec!r}")
 
-    @property
-    def S2020_secC(self) -> Dataset:
-        """Standardized Section C of Semper et al 2020 dataset"""
+        # Open CSV file
+        fname = self.raw_pooch.fetch(f"Semper_2020/CTD/Section{sec}_NEIceland_CTD.tab")
+        with open(fname, "r") as f:
+            for skiprow, row in enumerate(f):
+                if row.startswith("*"):
+                    break
+        df = pd.read_csv(fname, sep="\t", header=skiprow + 1, parse_dates=["Date/Time"])
 
-        return self._S2020("C")
+        # Transform to Dataset
+        indexes = ["Event", "Press [dbar]"]
+        ds = df.set_index(indexes).sort_values(indexes).to_xarray()
+        ds.attrs = {
+            "featureType": "timeSeries",
+            "description": f"Section {sec} of Semper et al 2020 dataset",
+        }
 
-    @property
-    def S2020_secD(self) -> Dataset:
-        """Standardized Section D of Semper et al 2020 dataset"""
-
-        return self._S2020("D")
-
-    @property
-    def S2020_secE(self) -> Dataset:
-        """Standardized Section E of Semper et al 2020 dataset"""
-
-        return self._S2020("E")
-
-    def _S2020(self, sec) -> Dataset:
-        """Standardized Semper et al 2020 dataset"""
-
-        CTDfile = self.raw_pooch.fetch(
-            "Semper_2020/CTD/Section" + sec + "_NEIceland_CTD.tab"
+        # Rename dimensions and assign coordinates
+        ds = ds.assign_coords(
+            {
+                coord: ds[coord].mean("Press [dbar]")
+                for coord in ["Date/Time", "Longitude", "Latitude"]
+            }
         )
-        skiprow = 0
-        a = open(CTDfile)
-        for line in a:
-            if line[0] == "*":
-                skiprow += 1
-                break
-            skiprow += 1
-        dfCTD = pd.read_csv(CTDfile, sep="\t", header=skiprow)
-
-        # Creating variables array
-        Stations = np.unique(dfCTD["Event"])
-        if sec == "B" or sec == "E":
-            Stations = Stations[::-1]
-        Depths = -z_from_p(
-            dfCTD["Press [dbar]"],
-            dfCTD["Latitude"],
-            dfCTD["Press [dbar]"] * 0.0,
-            dfCTD["Press [dbar]"] * 0.0,
-        )
-        Depths = np.unique(np.around(Depths, decimals=1))[::1]
-        nx = len(Stations)
-        nk = len(Depths)
-        Tem = np.ones((nk, nx)) * -99999.9
-        Sal = np.ones((nk, nx)) * -99999.9
-        Time = []
-        Lon = []
-        Lat = []
-
-        for s in range(len(Stations)):
-            DF = dfCTD[dfCTD["Event"] == Stations[s]]
-            Time.append(np.unique(DF["Date/Time"])[0])
-            Lon.append(np.unique(DF["Longitude"])[0])
-            Lat.append(np.unique(DF["Latitude"])[0])
-            for z in range(len(Depths)):
-                depth_z = -z_from_p(
-                    DF["Press [dbar]"],
-                    DF["Latitude"],
-                    DF["Press [dbar]"] * 0.0,
-                    DF["Press [dbar]"] * 0.0,
-                )
-
-                df_z = DF[np.around(depth_z, decimals=1) == Depths[z]]
-                if len(df_z) > 0:
-                    if len(df_z) > 1:
-                        df_T = df_z["Temp [°C]"]
-                        df_S = df_z["Sal"]
-                        Tem[z, s] = df_T[df_T.index[0]]
-                        Sal[z, s] = df_S[df_S.index[0]]
-                    else:
-                        Tem[z, s] = df_z["Temp [°C]"]
-                        Sal[z, s] = df_z["Sal"]
-                elif Depths[z] <= depth_z[depth_z.index[-1]]:
-                    Tem[z, s] = np.nan
-                    Sal[z, s] = np.nan
-
-        # Creating Dataset
-        ds = Dataset(
-            data_vars=dict(
-                TEM=(["Depth", "station"], Tem),
-                SAL=(["Depth", "station"], Sal),
-            ),
-            coords=dict(
-                station=(["station"], range(nx)),
-                Depth=(["Depth"], Depths),
-            ),
-            attrs=dict(description="Section " + sec + " of Semper et al 2020 dataset"),
-        )
-
-        # Dropping Nan and masking land
-        ds = ds.dropna("Depth")
-        ds = ds.where(ds > -99999.9, np.nan)
-
-        # Adding Time, Topography, Lon and Lat variables
-        daTime = DataArray(Time, coords=[range(nx)], dims=["station"])
-        daLon = DataArray(Lon, coords=[range(nx)], dims=["station"])
-        daLat = DataArray(Lat, coords=[range(nx)], dims=["station"])
-
-        ds["Time"] = daTime
-        ds["Longitude"] = daLon
-        ds["Latitude"] = daLat
+        ds = ds.rename(Event="station")
 
         # Manually add CF attributes
-        attrs = dict(
-            Depth={"standard_name": "depth"},
-            station={"long_name": "station id"},
-            Longitude={"standard_name": "longitude"},
-            Latitude={"standard_name": "latitude"},
-            SAL={"standard_name": "sea_water_practical_salinity"},
-            TEM={"standard_name": "sea_water_temperature"},
-        )
+        attrs = {
+            "Date/Time": {"standard_name": "time"},
+            "Press [dbar]": {"standard_name": "depth"},
+            "station": {"long_name": "station id"},
+            "Longitude": {"standard_name": "longitude"},
+            "Latitude": {"standard_name": "latitude"},
+            "Sal": {"standard_name": "sea_water_practical_salinity"},
+            "Temp [°C]": {"standard_name": "sea_water_temperature"},
+        }
         ds = add_attributes_and_rename_variables(ds, attrs)
 
         # Compute potential temperature
