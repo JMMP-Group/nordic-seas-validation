@@ -470,7 +470,7 @@ class Standardizer:
             5: range(379, 387),
             6: (list(range(387, 396)) + list(range(401, 407))),
             7: range(407, 427),
-            8: list(range(437, 445)) + list(range(430, 426, -1)),
+            8: list(range(437, 445)) + list(range(430, 426)),
             9: list(range(451, 457)),
         }
         if sec_id not in sec_dict:
