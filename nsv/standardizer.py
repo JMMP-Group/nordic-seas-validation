@@ -105,7 +105,7 @@ class Standardizer:
 
         # Rename
         ds = ds.rename(
-            xvec="dist", ws="through_section_velocity", wc="cross_section_velocity"
+            xvec="distance", ws="through_section_velocity", wc="cross_section_velocity"
         )
 
         return ds
@@ -217,7 +217,7 @@ class Standardizer:
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         # Rename
-        ds = ds.rename(X="dist")
+        ds = ds.rename(X="distance")
 
         return ds
 
@@ -247,7 +247,7 @@ class Standardizer:
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         # Rename
-        ds = ds.rename(X="dist", OrtVel="through_section_velocity")
+        ds = ds.rename(X="distance", OrtVel="through_section_velocity")
 
         return ds
 

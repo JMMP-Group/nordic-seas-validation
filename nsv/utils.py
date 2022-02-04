@@ -1,8 +1,9 @@
 from functools import wraps
 
 import cf_xarray  # noqa: F401
+from geopy.distance import great_circle
 from gsw import SA_from_SP, pt0_from_t
-from xarray import Dataset
+from xarray import DataArray, Dataset
 
 
 def final_cleanup_before_returning(func):
@@ -20,10 +21,45 @@ def final_cleanup_before_returning(func):
         # Add cf attributes
         ds = ds.cf.add_canonical_attributes()
 
-        # Sort stations by longitute
-        ds = ds.cf.sortby("longitude")
-        if "time" in ds:
-            ds = ds.sortby("time")
+        # Assign coordinates to variables (better integration with cf-xarray)
+        for varname, variable in ds.data_vars.items():
+            coordinates = []
+            for coord in sum(ds.cf.coordinates.values(), []):
+                if set(ds[coord].dims) <= set(variable.dims):
+                    coordinates.append(coord)
+            if coordinates:
+                variable.attrs["coordinates"] = " ".join(coordinates)
+            else:
+                variable.attrs.pop("coordinates", None)
+
+        # Sort
+        if "distance" in ds:
+            sortvar = "distance"
+        elif "time" in ds and "time" not in ds.dims:
+            sortvar = "time"
+        else:
+            sortvar = (
+                "longitude"
+                if ds.cf["longitude"].std() > ds.cf["latitude"].std()
+                else "latitude"
+            )
+        print(sortvar)
+        ds = ds.sortby(sortvar)
+
+        # Compute distance along transect
+        if "distance" not in ds:
+            lons = ds.cf["longitude"]
+            lats = ds.cf["latitude"]
+            distance = [0]
+            for i in range(1, len(lons)):
+                coords = ((lats[ind], lons[ind]) for ind in (i - 1, i))
+                distance.append(distance[-1] + great_circle(*coords).km)
+            distance = DataArray(
+                distance,
+                dims=lons.dims,
+                attrs={"long_name": "distance along transect", "units": "km"},
+            )
+            ds = ds.assign_coords(distance=distance)
 
         # Don't use strings for stations
         if "station" in ds.variables:
@@ -35,6 +71,7 @@ def final_cleanup_before_returning(func):
             "description"
         ] = f"Standardized {func.__name__.upper()}{args[1:] or ''}{kwargs or ''}"
         ds.attrs["featureType"] = "timeSeries"
+
         return ds
 
     return wrapper
