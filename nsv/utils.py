@@ -43,7 +43,6 @@ def final_cleanup_before_returning(func):
                 if ds.cf["longitude"].std() > ds.cf["latitude"].std()
                 else "latitude"
             )
-        print(sortvar)
         ds = ds.sortby(sortvar)
 
         # Compute distance along transect
