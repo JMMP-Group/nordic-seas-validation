@@ -1,5 +1,6 @@
 from importlib.metadata import PackageNotFoundError, version
 
+from .section_finder import SectionFinder
 from .standardizer import Standardizer
 
 try:
@@ -9,3 +10,5 @@ except PackageNotFoundError:
 
 # Set alias
 Standardiser = Standardizer
+
+__all__ = ("Standardizer", "SectionFinder")
