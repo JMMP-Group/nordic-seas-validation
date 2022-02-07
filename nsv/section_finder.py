@@ -106,7 +106,7 @@ class SectionFinder:
 
             # Insert new values
             # Single diagonal step: move zonally first
-            mask = np.logical_and(np.abs(dx) == 1, np.abs(dy) == 1)
+            mask = np.abs(dx * dy) == 1
             ix = np.insert(ix, inds + 1, ix[inds] + (dx / 2).astype(int))
             iy = np.insert(
                 iy, inds + 1, iy[inds] + np.where(mask, dy, (dy / 2).astype(int))
