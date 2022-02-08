@@ -44,16 +44,13 @@ class SectionFinder:
         Given the coordinates defining a section, find the nearest points
         on a model grid.
 
-        Parameters
-        ----------
-        lons, lats: 1D array-like
-            Coordinates defining a section
-        grid: string {"u", "v", "t", "f"}
-            Model grid
+        Args:
+            lons (1D array-like): Longitudes defining a section
+            lats (1D array-like): Latitudes defining a section
+            grid (string): Model grid `{"u", "v", "t", "f"}`
 
-        Returns
-        -------
-        Dataset
+        Returns:
+            Dataset
         """
 
         if not self.grids[grid].xoak.index:
@@ -68,16 +65,13 @@ class SectionFinder:
         Given the coordinates defining a section, find the correspoinding zigzag section
         on a model grid.
 
-        Parameters
-        ----------
-        lons, lats: 1D array-like
-            Coordinates defining a section
-        grid: string {"u", "v", "t", "f"}
-            Model grid
+        Args:
+            lons (1D array-like): Longitudes defining a section
+            lats (1D array-like): Latitudes defining a section
+            grid (string): Model grid `{"u", "v", "t", "f"}`
 
-        Returns
-        -------
-        Dataset
+        Returns:
+            Dataset
         """
 
         def diff_and_inds_where_insert(ix, iy):
@@ -127,15 +121,12 @@ class SectionFinder:
         Given the coordinates defining a section, find the corrisponding velocity points
         along a zigzag section (f-grid). Useful to compute accurate volume fluxes.
 
-        Parameters
-        ----------
-        lons, lats: 1D array-like
-            Coordinates defining a section
+        Args:
+            lons (1D array-like): Longitudes defining a section
+            lats (1D array-like): Latitudes defining a section
 
-        Returns
-        -------
-        dict
-            Dictionary mapping u/v grids to their dataset with coordinates and indexes.
+        Returns:
+            dict: Dictionary mapping u/v grids to their coordinates and indexes.
         """
 
         # ZigZag path along f
