@@ -133,7 +133,7 @@ ds_domain: Dataset
 
 ```python
 @property
-def grids()
+def grids() -> dict
 ```
 
 Dictionary mapping each grid to a dataset with its coordinates
@@ -143,7 +143,7 @@ Dictionary mapping each grid to a dataset with its coordinates
 #### nearest\_neighbor
 
 ```python
-def nearest_neighbor(lons, lats, grid)
+def nearest_neighbor(lons, lats, grid: str) -> Dataset
 ```
 
 Given the coordinates defining a section, find the nearest points
@@ -165,7 +165,7 @@ on a model grid.
 #### zigzag\_section
 
 ```python
-def zigzag_section(lons, lats, grid)
+def zigzag_section(lons, lats, grid: str) -> Dataset
 ```
 
 Given the coordinates defining a section, find the correspoinding zigzag section
@@ -187,7 +187,7 @@ on a model grid.
 #### velocity\_points\_along\_zigzag\_section
 
 ```python
-def velocity_points_along_zigzag_section(lons, lats)
+def velocity_points_along_zigzag_section(lons, lats) -> dict
 ```
 
 Given the coordinates defining a section, find the corrisponding velocity points

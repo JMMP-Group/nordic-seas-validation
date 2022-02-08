@@ -21,7 +21,7 @@ class SectionFinder:
         self._grids = {}
 
     @property
-    def grids(self):
+    def grids(self) -> dict:
         """Dictionary mapping each grid to a dataset with its coordinates"""
 
         if not self._grids:
@@ -39,7 +39,7 @@ class SectionFinder:
 
         return self._grids
 
-    def nearest_neighbor(self, lons, lats, grid):
+    def nearest_neighbor(self, lons, lats, grid: str) -> Dataset:
         """
         Given the coordinates defining a section, find the nearest points
         on a model grid.
@@ -60,7 +60,7 @@ class SectionFinder:
 
     nearest_neighbour = nearest_neighbor
 
-    def zigzag_section(self, lons, lats, grid):
+    def zigzag_section(self, lons, lats, grid: str) -> Dataset:
         """
         Given the coordinates defining a section, find the correspoinding zigzag section
         on a model grid.
@@ -116,7 +116,7 @@ class SectionFinder:
 
         return self.nearest_neighbor(ds["lon"], ds["lat"], grid)
 
-    def velocity_points_along_zigzag_section(self, lons, lats):
+    def velocity_points_along_zigzag_section(self, lons, lats) -> dict:
         """
         Given the coordinates defining a section, find the corrisponding velocity points
         along a zigzag section (f-grid). Useful to compute accurate volume fluxes.
