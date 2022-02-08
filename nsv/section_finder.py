@@ -50,7 +50,7 @@ class SectionFinder:
             grid (string): Model grid `{"u", "v", "t", "f"}`
 
         Returns:
-            Dataset
+            Dataset: Dataset with model coordinates and indexes
         """
 
         if not self.grids[grid].xoak.index:
@@ -71,7 +71,7 @@ class SectionFinder:
             grid (string): Model grid `{"u", "v", "t", "f"}`
 
         Returns:
-            Dataset
+            Dataset: Dataset with model coordinates and indexes
         """
 
         def diff_and_inds_where_insert(ix, iy):

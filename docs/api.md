@@ -158,7 +158,7 @@ on a model grid.
 
 **Returns**:
 
-  Dataset
+- `Dataset` - Dataset with model coordinates and indexes
 
 <a id="section_finder.SectionFinder.zigzag_section"></a>
 
@@ -180,7 +180,7 @@ on a model grid.
 
 **Returns**:
 
-  Dataset
+- `Dataset` - Dataset with model coordinates and indexes
 
 <a id="section_finder.SectionFinder.velocity_points_along_zigzag_section"></a>
 
