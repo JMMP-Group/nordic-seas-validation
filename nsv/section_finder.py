@@ -105,7 +105,7 @@ class SectionFinder:
             dx, dy = (di[inds] for di in (dx, dy))
 
             # Insert new values
-            # Single diagonal step: move zonally first
+            # Single diagonal step: move along y direction first
             mask = np.abs(dx * dy) == 1
             ix = np.insert(ix, inds + 1, ix[inds] + (dx / 2).astype(int))
             iy = np.insert(
