@@ -29,5 +29,5 @@ repos:
          name: pydoc-markdown
          language: python
          additional_dependencies: ["pydoc-markdown==4.5.0"]
-         entry: bash -c 'pydoc-markdown -I nsv/ > docs/api.md'
+         entry: bash -c 'pydoc-markdown -p nsv > docs/api.md'
          pass_filenames: false

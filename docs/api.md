@@ -1,16 +1,12 @@
-<a id="__init__"></a>
+<a id="nsv"></a>
 
-# \_\_init\_\_
+# nsv
 
-<a id="utils"></a>
+<a id="nsv.standardizer"></a>
 
-# utils
+# nsv.standardizer
 
-<a id="standardizer"></a>
-
-# standardizer
-
-<a id="standardizer.Standardizer"></a>
+<a id="nsv.standardizer.Standardizer"></a>
 
 ## Standardizer Objects
 
@@ -21,7 +17,7 @@ class Standardizer()
 
 Standardize raw data
 
-<a id="standardizer.Standardizer.kogur"></a>
+<a id="nsv.standardizer.Standardizer.kogur"></a>
 
 #### kogur
 
@@ -32,7 +28,7 @@ def kogur() -> Dataset
 
 Standardized Kögur dataset
 
-<a id="standardizer.Standardizer.latrabjarg_climatology"></a>
+<a id="nsv.standardizer.Standardizer.latrabjarg_climatology"></a>
 
 #### latrabjarg\_climatology
 
@@ -43,7 +39,7 @@ def latrabjarg_climatology() -> Dataset
 
 Standardized Látrabjarg climatology dataset
 
-<a id="standardizer.Standardizer.latrabjarg_survey"></a>
+<a id="nsv.standardizer.Standardizer.latrabjarg_survey"></a>
 
 #### latrabjarg\_survey
 
@@ -54,7 +50,7 @@ def latrabjarg_survey() -> Dataset
 
 Standardized Látrabjarg survey dataset
 
-<a id="standardizer.Standardizer.fim_1m"></a>
+<a id="nsv.standardizer.Standardizer.fim_1m"></a>
 
 #### fim\_1m
 
@@ -65,7 +61,7 @@ def fim_1m() -> Dataset
 
 Standardized FIM in 1m depth bins
 
-<a id="standardizer.Standardizer.fim_25m"></a>
+<a id="nsv.standardizer.Standardizer.fim_25m"></a>
 
 #### fim\_25m
 
@@ -76,7 +72,7 @@ def fim_25m() -> Dataset
 
 Standardized FIM in 25m depth bins
 
-<a id="standardizer.Standardizer.osnap"></a>
+<a id="nsv.standardizer.Standardizer.osnap"></a>
 
 #### osnap
 
@@ -87,7 +83,7 @@ def osnap() -> Dataset
 
 Standardized OSNAP dataset
 
-<a id="standardizer.Standardizer.ovide"></a>
+<a id="nsv.standardizer.Standardizer.ovide"></a>
 
 #### ovide
 
@@ -98,7 +94,7 @@ def ovide() -> Dataset
 
 Standardized OVIDE dataset
 
-<a id="standardizer.Standardizer.eel"></a>
+<a id="nsv.standardizer.Standardizer.eel"></a>
 
 #### eel
 
@@ -109,11 +105,15 @@ def eel()
 
 Standardized EEL dataset
 
-<a id="section_finder"></a>
+<a id="nsv.utils"></a>
 
-# section\_finder
+# nsv.utils
 
-<a id="section_finder.SectionFinder"></a>
+<a id="nsv.section_finder"></a>
+
+# nsv.section\_finder
+
+<a id="nsv.section_finder.SectionFinder"></a>
 
 ## SectionFinder Objects
 
@@ -127,7 +127,7 @@ Parameters
 ds_domain: Dataset
     domain_cfg dataset
 
-<a id="section_finder.SectionFinder.grids"></a>
+<a id="nsv.section_finder.SectionFinder.grids"></a>
 
 #### grids
 
@@ -138,7 +138,7 @@ def grids() -> dict
 
 Dictionary mapping each grid to a dataset with its coordinates
 
-<a id="section_finder.SectionFinder.nearest_neighbor"></a>
+<a id="nsv.section_finder.SectionFinder.nearest_neighbor"></a>
 
 #### nearest\_neighbor
 
@@ -160,7 +160,7 @@ on a model grid.
 
 - `Dataset` - Dataset with model coordinates and indexes
 
-<a id="section_finder.SectionFinder.zigzag_section"></a>
+<a id="nsv.section_finder.SectionFinder.zigzag_section"></a>
 
 #### zigzag\_section
 
@@ -182,7 +182,7 @@ on a model grid.
 
 - `Dataset` - Dataset with model coordinates and indexes
 
-<a id="section_finder.SectionFinder.velocity_points_along_zigzag_section"></a>
+<a id="nsv.section_finder.SectionFinder.velocity_points_along_zigzag_section"></a>
 
 #### velocity\_points\_along\_zigzag\_section
 
