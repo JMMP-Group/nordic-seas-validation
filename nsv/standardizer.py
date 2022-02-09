@@ -256,15 +256,11 @@ class Standardizer:
         """
         Standardized FIM dataset
 
-        Parameters
-        ----------
-        sec: resolution, {1, 25}
-            Resolution [m]
+        Args:
+            sec (int): resolution {1, 25}
 
-        Returns
-        -------
-        ds: Dataset
-            Standardized dataset
+        Returns:
+            Dataset: Standardized dataset
         """
 
         # Check input
@@ -450,15 +446,11 @@ class Standardizer:
         """
         Standardized Meteor cruise M82/1
 
-        Parameters
-        ----------
-        sec: int, {1, 2, 3, 4, 5, 6, 7, 8, 9}
-            Section ID
+        Args:
+        sec (int): Section ID {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
-        Returns
-        -------
-        ds: Dataset
-            Standardized dataset
+        Returns:
+            Dataset: Standardized dataset
         """
 
         # Check input
@@ -586,15 +578,11 @@ class Standardizer:
         """
         Standardized Knorr cruise KN203-2
 
-        Parameters
-        ----------
-        sec_id: str, {"A", "B", "C", "D", "E"}
-            Section ID
+        Args:
+            sec_id (str): Section ID {"A", "B", "C", "D", "E"}
 
-        Returns
-        -------
-        ds: Dataset
-            Standardized dataset
+        Returns:
+            Dataset: Standardized dataset
         """
 
         # Check input
