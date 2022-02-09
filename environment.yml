@@ -11,3 +11,8 @@ dependencies:
   - pooch
   - scipy
   - xarray
+  - numpy
+  - matplotlib
+  - ipython
+  - cartopy
+  - geopy

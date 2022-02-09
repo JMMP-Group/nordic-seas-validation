@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from string import ascii_uppercase
 
 import pandas as pd
 import pooch
@@ -7,7 +8,12 @@ import xarray as xr
 from scipy.io import loadmat
 from xarray import DataArray, Dataset
 
-from .utils import add_attributes_and_rename_variables, add_cf_attributes, compute_pt0
+from .utils import (
+    add_attributes_and_rename_variables,
+    compute_pt0,
+    dms2d,
+    final_cleanup_before_returning,
+)
 
 
 @dataclass
@@ -29,6 +35,7 @@ class Standardizer:
         return pooch_obj
 
     @property
+    @final_cleanup_before_returning
     def kogur(self) -> Dataset:
         """Standardized Kögur dataset"""
 
@@ -48,7 +55,7 @@ class Standardizer:
         }
 
         # Initialize dataset
-        ds = Dataset(variables, coords=coords, attrs={"featureType": "timeSeries"})
+        ds = Dataset(variables, coords=coords)
         ds = ds.rename_dims(xvec="station")
         ds["station"] = ds["station"]
 
@@ -98,10 +105,10 @@ class Standardizer:
 
         # Rename
         ds = ds.rename(
-            xvec="dist", ws="through_section_velocity", wc="cross_section_velocity"
+            xvec="distance", ws="through_section_velocity", wc="cross_section_velocity"
         )
 
-        return add_cf_attributes(ds)
+        return ds
 
     def _interpolate_latrabjarg_bathymetry(self, dist_coord: DataArray) -> Dataset:
         """Interpolate Látrabjarg bathymetry using distances from sill"""
@@ -159,7 +166,7 @@ class Standardizer:
         }
 
         # Initialize dataset
-        ds = Dataset(variables, coords=coords, attrs={"featureType": "timeSeries"})
+        ds = Dataset(variables, coords=coords)
         ds = ds.rename_dims(X="station")
         ds["station"] = ds["station"]
 
@@ -178,6 +185,7 @@ class Standardizer:
         return ds
 
     @property
+    @final_cleanup_before_returning
     def latrabjarg_climatology(self) -> Dataset:
         """Standardized Látrabjarg climatology dataset"""
 
@@ -209,11 +217,12 @@ class Standardizer:
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         # Rename
-        ds = ds.rename(X="dist")
+        ds = ds.rename(X="distance")
 
-        return add_cf_attributes(ds)
+        return ds
 
     @property
+    @final_cleanup_before_returning
     def latrabjarg_survey(self) -> Dataset:
         """Standardized Látrabjarg survey dataset"""
 
@@ -238,29 +247,36 @@ class Standardizer:
         ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         # Rename
-        ds = ds.rename(X="dist", OrtVel="through_section_velocity")
+        ds = ds.rename(X="distance", OrtVel="through_section_velocity")
 
-        return add_cf_attributes(ds)
+        return ds
 
-    @property
-    def fim_1m(self) -> Dataset:
-        """Standardized FIM in 1m depth bins"""
+    @final_cleanup_before_returning
+    def fim(self, resolution: int) -> Dataset:
+        """
+        Standardized FIM dataset
 
-        return self._fim(1)
+        Parameters
+        ----------
+        sec: resolution, {1, 25}
+            Resolution [m]
 
-    @property
-    def fim_25m(self) -> Dataset:
-        """Standardized FIM in 25m depth bins"""
+        Returns
+        -------
+        ds: Dataset
+            Standardized dataset
+        """
 
-        return self._fim(25)
-
-    def _fim(self, resolution) -> Dataset:
-        """Standardized FIM dataset"""
+        # Check input
+        ok_res = [1, 25]
+        if resolution not in ok_res:
+            raise ValueError(
+                f"{resolution} is not available. Available sections: {ok_res!r}"
+            )
 
         # Open NetCDF file
         filename = self.raw_pooch.fetch(f"FIM/FIM_CTD_{resolution}m.nc")
         ds = xr.open_mfdataset(filename)
-        ds.attrs = {"featureType": "timeSeries"}
 
         # Drop variables
         ds = ds.drop(
@@ -288,9 +304,10 @@ class Standardizer:
         # Compute potential temperature
         ds["potential_temperature"] = compute_pt0(ds)
 
-        return add_cf_attributes(ds)
+        return ds
 
     @property
+    @final_cleanup_before_returning
     def osnap(self) -> Dataset:
         """Standardized OSNAP dataset"""
 
@@ -300,7 +317,6 @@ class Standardizer:
             for file in ("Gridded_TS", "Transports")
         ]
         ds = xr.open_mfdataset(filenames)
-        ds.attrs = {"featureType": "timeSeries"}
 
         # Rename dimensions
         ds = ds.rename_dims(LONGITUDE="station", LATITUDE="station")
@@ -315,16 +331,16 @@ class Standardizer:
         # Compute potential temperature
         ds["potential_temperature"] = compute_pt0(ds)
 
-        return add_cf_attributes(ds)
+        return ds
 
     @property
+    @final_cleanup_before_returning
     def ovide(self) -> Dataset:
         """Standardized OVIDE dataset"""
 
         # Open NetCDF file
         filename = self.raw_pooch.fetch("OVIDE/Daniault_2016_climatology.nc")
         ds = xr.open_mfdataset(filename)
-        ds.attrs = {"featureType": "timeSeries"}
 
         # Rename dimensions
         ds = ds.rename_dims(Dist="station", DistTr="mid_station")
@@ -336,7 +352,7 @@ class Standardizer:
         # STATION
         # Manually add CF attributes
         attrs = dict(
-            Depth={"standard_name": "depth"},
+            Depth={"standard_name": "depth", "positive": "down"},
             station={"long_name": "station id"},
             Longitude={"standard_name": "longitude"},
             Latitude={"standard_name": "latitude"},
@@ -365,7 +381,7 @@ class Standardizer:
         # MID STATION
         # Manually add CF attributes
         attrs = dict(
-            Depth={"standard_name": "depth"},
+            Depth={"standard_name": "depth", "positive": "down"},
             mid_station={"long_name": "mid station id"},
             Lon_Transport={"standard_name": "longitude"},
             Lat_Transport={"standard_name": "latitude"},
@@ -381,10 +397,147 @@ class Standardizer:
             }
         )
 
-        return add_cf_attributes(ds_station.merge(ds_mid))
+        return ds_station.merge(ds_mid)
 
     @property
-    def eel(self):
+    @final_cleanup_before_returning
+    def ho2000(self) -> Dataset:
+        """Standardized Hansen & Osterhus 2000 dataset"""
+
+        # Read variables
+        dataframes = {}
+        for var in ("Tem", "Sal"):
+            filename = self.raw_pooch.fetch(f"Hansen_Osterhus_2000/{var}_data.csv")
+            df = pd.read_csv(filename, index_col="Depth")
+            dataframes[var] = df.apply(pd.to_numeric, errors="coerce")
+        ds = Dataset(dataframes).rename(dim_1="Stations")
+
+        # Assign coordinates
+        coords_fname = self.raw_pooch.fetch("Hansen_Osterhus_2000/Stations_coord.csv")
+        coords_df = pd.read_csv(coords_fname).set_index("Stations")
+        coords_ds = Dataset(coords_df).drop("Stations")
+        ds = ds.assign_coords(
+            {
+                pref: dms2d(*[coords_ds[f"{pref} {suff}"] for suff in ("deg", "min")])
+                for pref in ("LON", "LAT")
+            }
+        )
+
+        # Rename dimensions
+        ds = ds.rename(Stations="station")
+
+        # Manually add CF attributes
+        attrs = dict(
+            Depth={
+                "standard_name": "depth",
+                "positive": "down",
+            },
+            station={"long_name": "station id"},
+            LON={"standard_name": "longitude"},
+            LAT={"standard_name": "latitude"},
+            Sal={"standard_name": "sea_water_practical_salinity"},
+            Tem={"standard_name": "sea_water_temperature"},
+        )
+        ds = add_attributes_and_rename_variables(ds, attrs)
+
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
+        return ds
+
+    @final_cleanup_before_returning
+    def m82_1(self, sec_id) -> Dataset:
+        """
+        Standardized Meteor cruise M82/1
+
+        Parameters
+        ----------
+        sec: int, {1, 2, 3, 4, 5, 6, 7, 8, 9}
+            Section ID
+
+        Returns
+        -------
+        ds: Dataset
+            Standardized dataset
+        """
+
+        # Check input
+        sec_dict = {
+            1: list(range(322, 333)) + list(range(334, 337)),
+            2: range(337, 345),
+            3: range(347, 363),
+            4: list(range(363, 379)),
+            5: range(379, 387),
+            6: (list(range(387, 396)) + list(range(401, 407))),
+            7: range(407, 427),
+            8: list(range(437, 445)) + list(range(430, 426)),
+            9: list(range(451, 457)),
+        }
+        if sec_id not in sec_dict:
+            raise ValueError(
+                f"{sec_id} is not available. Available sections: {list(sec_dict)!r}"
+            )
+
+        # Open CSV file
+        filename = self.raw_pooch.fetch("Quadfasel_2018/M82-1_CTD.tab")
+        df = pd.read_csv(filename, sep="\t", header=176, parse_dates=["Date/Time"])
+
+        # Extract section
+        events = [f"M82/1_{i}" for i in sec_dict[sec_id]]
+        df = df[df["Event"].isin(events)]
+
+        # Transform to Dataset (round depths and average duplicates)
+        df["Depth water [m]"] = df["Depth water [m]"].round()
+        indexes = ["Event", "Depth water [m]"]
+        df = (
+            df.set_index(indexes)
+            .groupby(indexes)
+            .mean(numeric_only=False)
+            .sort_values(indexes)
+        )
+        ds = df.to_xarray()
+
+        # Rename dimensions and assign coordinates
+        ds = ds.assign_coords(
+            {
+                coord: ds[coord].mean("Depth water [m]")
+                for coord in ["Date/Time", "Longitude", "Latitude", "Elevation [m]"]
+            }
+        )
+        ds = ds.reset_coords("Elevation [m]").rename(Event="station")
+
+        # Manually add CF attributes
+        ds = ds.rename(
+            {"DO [ml/l]": "DO", "O2 [µmol/l]": "O2", "Transmission [%]": "Transmission"}
+        )
+        ds["Elevation [m]"] *= -1
+        attrs = {
+            "Depth water [m]": {
+                "standard_name": "depth",
+                "positive": "down",
+            },
+            "Date/Time": {"standard_name": "time"},
+            "station": {"long_name": "station id"},
+            "Longitude": {"standard_name": "longitude"},
+            "Latitude": {"standard_name": "latitude"},
+            "Temp [°C]": {"standard_name": "sea_water_temperature"},
+            "Sal": {"standard_name": "sea_water_practical_salinity"},
+            "Press [dbar]": {"standard_name": "sea_water_pressure"},
+            "DO": {"long_name": "oxygen dissolved", "units": "ml/l"},
+            "O2": {"long_name": "oxygen", "units": "µmol/l"},
+            "Transmission": {"long_name": "transmission of light", "units": "%"},
+            "Elevation [m]": {"standard_name": "sea_floor_depth_below_geoid"},
+        }
+        ds = add_attributes_and_rename_variables(ds, attrs)
+
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
+        return ds
+
+    @property
+    @final_cleanup_before_returning
+    def eel(self) -> Dataset:
         """Standardized EEL dataset"""
 
         # Open CSV file
@@ -399,7 +552,6 @@ class Standardizer:
         ds_coords = df_coords.set_index("Refdist").sort_values("Refdist").to_xarray()
         ds_data = df_data.set_index(indexes).sort_values(indexes).to_xarray()
         ds = xr.merge([ds_coords, ds_data])
-        ds.attrs = {"featureType": "timeSeries"}
 
         # Rename dimensions and assign coordinates
         ds = ds.rename(Staname="station", Refdist="distance")
@@ -427,4 +579,68 @@ class Standardizer:
         )
         ds = add_attributes_and_rename_variables(ds, attrs)
 
-        return add_cf_attributes(ds)
+        return ds
+
+    @final_cleanup_before_returning
+    def kn203_2(self, sec_id: str) -> Dataset:
+        """
+        Standardized Knorr cruise KN203-2
+
+        Parameters
+        ----------
+        sec_id: str, {"A", "B", "C", "D", "E"}
+            Section ID
+
+        Returns
+        -------
+        ds: Dataset
+            Standardized dataset
+        """
+
+        # Check input
+        sec_id = sec_id.upper()
+        ok_sec = list(ascii_uppercase[:5])
+        if sec_id not in ok_sec:
+            raise ValueError(
+                f"{sec_id} is not available. Available sections: {ok_sec!r}"
+            )
+
+        # Open CSV file
+        fname = self.raw_pooch.fetch(
+            f"Semper_2020/CTD/Section{sec_id}_NEIceland_CTD.tab"
+        )
+        with open(fname, "r") as f:
+            for skiprow, row in enumerate(f):
+                if row.startswith("*"):
+                    break
+        df = pd.read_csv(fname, sep="\t", header=skiprow + 1, parse_dates=["Date/Time"])
+
+        # Transform to Dataset
+        indexes = ["Event", "Press [dbar]"]
+        ds = df.set_index(indexes).sort_values(indexes).to_xarray()
+
+        # Rename dimensions and assign coordinates
+        ds = ds.assign_coords(
+            {
+                coord: ds[coord].mean("Press [dbar]")
+                for coord in ["Date/Time", "Longitude", "Latitude"]
+            }
+        )
+        ds = ds.rename(Event="station")
+
+        # Manually add CF attributes
+        attrs = {
+            "Date/Time": {"standard_name": "time"},
+            "Press [dbar]": {"standard_name": "depth", "positive": "down"},
+            "station": {"long_name": "station id"},
+            "Longitude": {"standard_name": "longitude"},
+            "Latitude": {"standard_name": "latitude"},
+            "Sal": {"standard_name": "sea_water_practical_salinity"},
+            "Temp [°C]": {"standard_name": "sea_water_temperature"},
+        }
+        ds = add_attributes_and_rename_variables(ds, attrs)
+
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
+        return ds
