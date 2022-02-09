@@ -23,6 +23,7 @@ Standardize raw data
 
 ```python
 @property
+@final_cleanup_before_returning
 def kogur() -> Dataset
 ```
 
@@ -34,6 +35,7 @@ Standardized Kögur dataset
 
 ```python
 @property
+@final_cleanup_before_returning
 def latrabjarg_climatology() -> Dataset
 ```
 
@@ -45,32 +47,31 @@ Standardized Látrabjarg climatology dataset
 
 ```python
 @property
+@final_cleanup_before_returning
 def latrabjarg_survey() -> Dataset
 ```
 
 Standardized Látrabjarg survey dataset
 
-<a id="nsv.standardizer.Standardizer.fim_1m"></a>
+<a id="nsv.standardizer.Standardizer.fim"></a>
 
-#### fim\_1m
-
-```python
-@property
-def fim_1m() -> Dataset
-```
-
-Standardized FIM in 1m depth bins
-
-<a id="nsv.standardizer.Standardizer.fim_25m"></a>
-
-#### fim\_25m
+#### fim
 
 ```python
-@property
-def fim_25m() -> Dataset
+@final_cleanup_before_returning
+def fim(resolution: int) -> Dataset
 ```
 
-Standardized FIM in 25m depth bins
+Standardized FIM dataset
+
+**Arguments**:
+
+- `sec` _int_ - resolution {1, 25}
+  
+
+**Returns**:
+
+- `Dataset` - Standardized dataset
 
 <a id="nsv.standardizer.Standardizer.osnap"></a>
 
@@ -78,6 +79,7 @@ Standardized FIM in 25m depth bins
 
 ```python
 @property
+@final_cleanup_before_returning
 def osnap() -> Dataset
 ```
 
@@ -89,10 +91,43 @@ Standardized OSNAP dataset
 
 ```python
 @property
+@final_cleanup_before_returning
 def ovide() -> Dataset
 ```
 
 Standardized OVIDE dataset
+
+<a id="nsv.standardizer.Standardizer.ho2000"></a>
+
+#### ho2000
+
+```python
+@property
+@final_cleanup_before_returning
+def ho2000() -> Dataset
+```
+
+Standardized Hansen & Osterhus 2000 dataset
+
+<a id="nsv.standardizer.Standardizer.m82_1"></a>
+
+#### m82\_1
+
+```python
+@final_cleanup_before_returning
+def m82_1(sec_id) -> Dataset
+```
+
+Standardized Meteor cruise M82/1
+
+**Arguments**:
+
+- `sec` _int_ - Section ID {1, 2, 3, 4, 5, 6, 7, 8, 9}
+  
+
+**Returns**:
+
+- `Dataset` - Standardized dataset
 
 <a id="nsv.standardizer.Standardizer.eel"></a>
 
@@ -100,10 +135,31 @@ Standardized OVIDE dataset
 
 ```python
 @property
-def eel()
+@final_cleanup_before_returning
+def eel() -> Dataset
 ```
 
 Standardized EEL dataset
+
+<a id="nsv.standardizer.Standardizer.kn203_2"></a>
+
+#### kn203\_2
+
+```python
+@final_cleanup_before_returning
+def kn203_2(sec_id: str) -> Dataset
+```
+
+Standardized Knorr cruise KN203-2
+
+**Arguments**:
+
+- `sec_id` _str_ - Section ID {"A", "B", "C", "D", "E"}
+  
+
+**Returns**:
+
+- `Dataset` - Standardized dataset
 
 <a id="nsv.utils"></a>
 
@@ -122,10 +178,9 @@ Standardized EEL dataset
 class SectionFinder()
 ```
 
-Parameters
-----------
-ds_domain: Dataset
-    domain_cfg dataset
+**Arguments**:
+
+- `ds_domain` _Dataset_ - domain_cfg dataset
 
 <a id="nsv.section_finder.SectionFinder.grids"></a>
 

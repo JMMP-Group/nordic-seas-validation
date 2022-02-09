@@ -9,10 +9,8 @@ from xarray import DataArray, Dataset
 @dataclass
 class SectionFinder:
     """
-    Parameters
-    ----------
-    ds_domain: Dataset
-        domain_cfg dataset
+    Args:
+        ds_domain (Dataset): domain_cfg dataset
     """
 
     ds_domain: Dataset
