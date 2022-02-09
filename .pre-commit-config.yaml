@@ -30,5 +30,5 @@ repos:
          language: python
          language_version: python3.9
          additional_dependencies: ["pydoc-markdown==4.5.0"]
-         entry: bash -c 'pydoc-markdown -p nsv > docs/api.md'
+         entry: bash -c 'pydoc-markdown -p nsv > docs/api.md || pydoc-markdown -p nsv > b/docs/api.md'
          pass_filenames: false
