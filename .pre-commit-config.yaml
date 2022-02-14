@@ -3,7 +3,7 @@ ci:
     autofix_prs: false
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
       - id: check-added-large-files
       - id: check-yaml
@@ -14,7 +14,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/psf/black
-    rev: 21.10b0
+    rev: 22.1.0
     hooks:
       - id: black
 
@@ -28,6 +28,6 @@ repos:
        - id: pydoc-markdown
          name: pydoc-markdown
          language: python
-         additional_dependencies: ["pydoc-markdown==4.5.0"]
-         entry: bash -c 'pydoc-markdown -p nsv > docs/api.md'
+         additional_dependencies: ["pydoc-markdown>=4.0.0,<5.0.0"]
+         entry: pydoc-markdown
          pass_filenames: false
