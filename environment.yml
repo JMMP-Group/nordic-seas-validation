@@ -16,3 +16,6 @@ dependencies:
   - ipython
   - cartopy
   - geopy
+  - xoak
+  - scikit-learn
+  - pys2index
