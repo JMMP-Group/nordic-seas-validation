@@ -27,8 +27,7 @@ repos:
     hooks:
        - id: pydoc-markdown
          name: pydoc-markdown
-         language: python
-         additional_dependencies: ["pyyaml", "pydoc-markdown==4.5.0"]
+         language: conda
+         additional_dependencies: ["pydoc-markdown==4.5.0"]
          entry: pydoc-markdown
-         args: [--py3, --verbose]
          pass_filenames: false
