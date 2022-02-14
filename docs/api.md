@@ -2,6 +2,10 @@
 
 # nsv
 
+<a id="nsv.utils"></a>
+
+# nsv.utils
+
 <a id="nsv.standardizer"></a>
 
 # nsv.standardizer
@@ -160,10 +164,6 @@ Standardized Knorr cruise KN203-2
 **Returns**:
 
 - `Dataset` - Standardized dataset
-
-<a id="nsv.utils"></a>
-
-# nsv.utils
 
 <a id="nsv.section_finder"></a>
 
