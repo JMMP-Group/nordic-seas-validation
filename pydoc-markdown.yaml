@@ -1,6 +1,7 @@
 loaders:
   - type: python
     packages: [nsv]
+    search_path: [.]
 renderer:
   type: markdown
   filename: docs/api.md
