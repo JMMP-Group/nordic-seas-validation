@@ -30,4 +30,5 @@ repos:
          language: python
          additional_dependencies: ["pyyaml", "pydoc-markdown==4.5.0"]
          entry: pydoc-markdown
+         args: [--py3, --verbose]
          pass_filenames: false
