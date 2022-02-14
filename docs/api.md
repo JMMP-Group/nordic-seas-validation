@@ -165,6 +165,14 @@ Standardized Knorr cruise KN203-2
 
 - `Dataset` - Standardized dataset
 
+<a id="nsv.utils"></a>
+
+# nsv.utils
+
+<a id="nsv._version"></a>
+
+# nsv.\_version
+
 <a id="nsv.section_finder"></a>
 
 # nsv.section\_finder
