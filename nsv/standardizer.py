@@ -632,3 +632,82 @@ class Standardizer:
         ds["potential_temperature"] = compute_pt0(ds)
 
         return ds
+
+    @final_cleanup_before_returning
+    def pos503(self, sec_id) -> Dataset:
+        """
+        Standardized Meteor cruise POS503
+
+        Args:
+        sec (int): Section ID {1, 2, 3, 4, 5}
+
+        Returns:
+            Dataset: Standardized dataset
+        """
+
+        # Check input
+        sec_dict = {
+            1: list(range(423, 435)),
+            2: list(range(435, 447)),
+            3: list(range(447, 456)),
+            4: list(range(456, 464)),
+            5: list(range(464, 497)),
+        }
+        if sec_id not in sec_dict:
+            raise ValueError(
+                f"{sec_id} is not available. Available sections: {list(sec_dict)!r}"
+            )
+
+        # Open CSV file
+        filename = self.raw_pooch.fetch("Quadfasel_2018/POS503_CTD.tab")
+        df = pd.read_csv(filename, sep="\t", header=156, parse_dates=["Date/Time"])
+
+        # Extract section
+        events = [f"POS503_{i}-1" for i in sec_dict[sec_id]]
+        df = df[df["Event"].isin(events)]
+
+        # Transform to Dataset (round depths and average duplicates)
+        df["Depth water [m]"] = df["Depth water [m]"].round()
+        indexes = ["Event", "Depth water [m]"]
+        df = (
+            df.set_index(indexes)
+            .groupby(indexes)
+            .mean(numeric_only=False)
+            .sort_values(indexes)
+        )
+        ds = df.to_xarray()
+
+        # Rename dimensions and assign coordinates
+        ds = ds.assign_coords(
+            {
+                coord: ds[coord].mean("Depth water [m]")
+                for coord in ["Date/Time", "Longitude", "Latitude", "Elevation [m]"]
+            }
+        )
+        ds = ds.reset_coords("Elevation [m]").rename(Event="station")
+
+        # Manually add CF attributes
+        ds = ds.rename({"DO [ml/l]": "DO", "O2 [µmol/l]": "O2"})
+        ds["Elevation [m]"] *= -1
+        attrs = {
+            "Depth water [m]": {
+                "standard_name": "depth",
+                "positive": "down",
+            },
+            "Date/Time": {"standard_name": "time"},
+            "station": {"long_name": "station id"},
+            "Longitude": {"standard_name": "longitude"},
+            "Latitude": {"standard_name": "latitude"},
+            "Temp [°C]": {"standard_name": "sea_water_temperature"},
+            "Sal": {"standard_name": "sea_water_practical_salinity"},
+            "Press [dbar]": {"standard_name": "sea_water_pressure"},
+            "DO": {"long_name": "oxygen dissolved", "units": "ml/l"},
+            "O2": {"long_name": "oxygen", "units": "µmol/l"},
+            "Elevation [m]": {"standard_name": "sea_floor_depth_below_geoid"},
+        }
+        ds = add_attributes_and_rename_variables(ds, attrs)
+
+        # Compute potential temperature
+        ds["potential_temperature"] = compute_pt0(ds)
+
+        return ds
