@@ -354,7 +354,11 @@ class Standardizer:
 
         # Manually add CF attributes
         attrs_dict = dict(
-            time={"standard_name": "time", "long_name": "time vector for gridded data"},
+            time={
+                "standard_name": "time",
+                "long_name": "time vector for gridded data",
+                "units": "days since 1950-01-01",
+            },
             depth={
                 "standard_name": "depth",
                 "long_name": "depth of gridded product",
