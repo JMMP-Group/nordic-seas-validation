@@ -307,25 +307,75 @@ class Standardizer:
     def osnap(self) -> Dataset:
         """Standardized OSNAP dataset"""
 
-        # Open NetCDF file
-        filenames = [
-            self.raw_pooch.fetch(f"OSNAP/OSNAP_{file}_201408_201604_2018.nc")
-            for file in ("Gridded_TS", "Transports")
-        ]
-        ds = xr.open_mfdataset(filenames)
+        # Open mat file
+        filename = self.raw_pooch.fetch(
+            "OSNAP/OSNAP_Gridded_TSV_201408_201805_2021.mat"
+        )
+        mat = loadmat(filename, squeeze_me=True, mat_dtype=True)
 
-        # Rename dimensions
-        ds = ds.rename_dims(LONGITUDE="station", LATITUDE="station")
+        # Dimensions
+        coords = {
+            name: DataArray(mat["osnap"][name.upper()].item(), dims=name)
+            for name in ("lon", "depth", "time")
+        }
+        coords2 = {
+            name: DataArray(mat["osnap"][name.upper()].item(), dims=name)
+            for name in ("lon", "depth")
+        }
+        coords1 = {
+            name: DataArray(mat["osnap"][name.upper()].item(), dims=name)
+            for name in ("lon",)
+        }
+
+        # Variables
+        variables = {
+            name: DataArray(
+                mat["osnap"][name.upper()].item(), dims=tuple(coords), coords=coords
+            )
+            for name in ("theta", "psal", "velo")
+        }
+        variables["area"] = DataArray(
+            mat["osnap"]["AREA"].item(), dims=tuple(coords2), coords=coords2
+        )
+        variables["longitude"] = DataArray(
+            mat["osnap"]["LON"].item(), dims=tuple(coords1), coords=coords1
+        )
+        variables["latitude"] = DataArray(
+            mat["osnap"]["LAT"].item(), dims=tuple(coords1), coords=coords1
+        )
+        # Initialize dataset
+        ds = Dataset(variables, coords=coords)
+        ds = ds.rename_dims(lon="station")
         ds["station"] = ds["station"]
+        ds = ds.drop_vars("lon")
+
+        # Add coordinates
+        ds = ds.set_coords(["longitude", "latitude"])
 
         # Manually add CF attributes
-        attrs = dict(
+        attrs_dict = dict(
+            time={
+                "standard_name": "time",
+                "long_name": "time vector for gridded data",
+                "units": "days since 1950-01-01",
+            },
+            depth={
+                "standard_name": "depth",
+                "long_name": "depth of gridded product",
+                "positive": "down",
+            },
             station={"long_name": "station id"},
+            longitude={"standard_name": "longitude"},
+            latitude={"standard_name": "latitude"},
+            velo={"long_name": "velocity normal to the section", "units": "m s-1"},
+            psal={"standard_name": "sea_water_practical_salinity"},
+            theta={
+                "standard_name": "sea_water_potential_temperature",
+                "long_name": "Potential Temperature",
+                "units": "degree_C",
+            },
         )
-        ds = add_attributes_and_rename_variables(ds, attrs)
-
-        # Compute potential temperature
-        ds["potential_temperature"] = compute_pt0(ds)
+        ds = add_attributes_and_rename_variables(ds, attrs_dict)
 
         return ds
 
