@@ -144,6 +144,8 @@ class Standardizer:
         ds = ds.rename(regdist=dist_coord.name)
         ds = ds.interp(**{dist_coord.name: dist_coord.values})
         ds = ds.rename_dims({dist_coord.name: "station"})
+        ds = ds.reset_index(["X"]).reset_coords(["X"])
+        
         return ds
 
     def _initialize_latrabjarg(self, mat) -> Dataset:
@@ -168,6 +170,7 @@ class Standardizer:
         # Initialize dataset
         ds = Dataset(variables, coords=coords)
         ds = ds.rename_dims(X="station")
+        ds = ds.reset_index(["X"]).reset_coords(["X"])
         ds["station"] = ds["station"]
 
         # Center at the sill
