@@ -10,7 +10,7 @@ dependencies:
   - pandas
   - pooch
   - scipy
-  - xarray
+  - xarray<=2022.03.0
   - numpy
   - matplotlib
   - ipython

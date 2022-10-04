@@ -145,7 +145,7 @@ class Standardizer:
         ds = ds.interp(**{dist_coord.name: dist_coord.values})
         ds = ds.rename_dims({dist_coord.name: "station"})
         ds = ds.reset_index(["X"]).reset_coords(["X"])
-        
+
         return ds
 
     def _initialize_latrabjarg(self, mat) -> Dataset:
