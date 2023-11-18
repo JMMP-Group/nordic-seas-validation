@@ -1,5 +1,5 @@
 # nordic-seas-validation
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10149505.svg)](https://doi.org/10.5281/zenodo.10149505)
 ## Quick-start
 
 ```shell
