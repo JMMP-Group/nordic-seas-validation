@@ -2,6 +2,14 @@
 
 # nsv
 
+<a id="nsv._version"></a>
+
+# nsv.\_version
+
+<a id="nsv.utils"></a>
+
+# nsv.utils
+
 <a id="nsv.standardizer"></a>
 
 # nsv.standardizer
@@ -180,14 +188,6 @@ Standardized Meteor cruise POS503
 **Returns**:
 
 - `Dataset` - Standardized dataset
-
-<a id="nsv.utils"></a>
-
-# nsv.utils
-
-<a id="nsv._version"></a>
-
-# nsv.\_version
 
 <a id="nsv.section_finder"></a>
 
