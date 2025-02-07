@@ -31,5 +31,6 @@ python -c "import nsv"
 
 ## Authors
 
-*) [malmans2](https://github.com/malmans2)
-*) [oceandie](https://github.com/oceandie)
+* [malmans2](https://github.com/malmans2)
+
+* [oceandie](https://github.com/oceandie)
