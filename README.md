@@ -28,3 +28,8 @@ python -c "import nsv"
 | M82/1 | [10.1594/PANGAEA.890362](https://doi.pangaea.de/10.1594/PANGAEA.890362) | `nsv.Standardizer().m82_1(1)` <br> ...  <br> `nsv.Standardizer().m82_1(9)`|
 | KN203-2 | [10.1594/PANGAEA.919251-2](https://doi.pangaea.de/10.1594/PANGAEA.919251) | `nsv.Standardizer().kn203_2("A")` <br> ...  <br> `nsv.Standardizer().kn203_2("E")` |
 | POS503 | [10.1594/PANGAEA.890699](https://doi.org/10.1594/PANGAEA.890699) | `nsv.Standardizer().pos503(1)` <br> ...  <br> `nsv.Standardizer().pos503(5)` |
+
+## Authors
+
+*) [malmans2](https://github.com/malmans2)
+*) [oceandie](https://github.com/oceandie)
